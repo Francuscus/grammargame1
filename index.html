@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sentence Lab (English → Spanish Prep)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <h1>Sentence Lab</h1>
+      <p class="sub">Build sentences in English to prepare for Spanish structure.</p>
+    </div>
+    <div class="status">
+      <div><span id="levelLabel">Level 1</span> · <span id="conceptLabel">Subject + Verb</span></div>
+      <div class="small">Score: <span id="score">0</span> · Streak: <span id="streak">0</span></div>
+    </div>
+  </header>
+
+  <main class="grid">
+    <section class="card">
+      <h2>Mission</h2>
+      <p id="mission"></p>
+      <div class="hintbox">
+        <button id="hintBtn" class="btn ghost">Hint</button>
+        <p id="hint" class="hint"></p>
+      </div>
+      <div class="bridge">
+        <h3>Spanish Bridge</h3>
+        <p id="bridge"></p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Your Sentence</h2>
+      <div id="built" class="built" aria-live="polite"></div>
+      <div class="row">
+        <button id="undoBtn" class="btn ghost">Undo</button>
+        <button id="resetBtn" class="btn ghost">Reset</button>
+        <button id="checkBtn" class="btn">Check</button>
+      </div>
+      <p id="feedback" class="feedback" aria-live="polite"></p>
+    </section>
+
+    <section class="card wide">
+      <h2>Word Bank</h2>
+      <div id="bank" class="bank"></div>
+      <div class="row right">
+        <button id="shuffleBtn" class="btn ghost">Shuffle</button>
+        <button id="nextBtn" class="btn" disabled>Next Level</button>
+      </div>
+    </section>
+
+    <section class="card wide">
+      <h2>Quick Checks</h2>
+      <ul id="checks" class="checks"></ul>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span class="small">Tip: Commands can be sentences with no subject word (e.g., “Sit.”) — Spanish does this a lot.</span>
+  </footer>
+
+  <script src="game.js"></script>
+</body>
+</html>
