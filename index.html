@@ -1,83 +1,790 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sentence Lab (English → Spanish Prep)</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <header class="top">
-    <div class="brand">
-      <h1>Sentence Lab</h1>
-      <p class="sub">English grammar bootstrapping to prepare for Spanish structure.</p>
-    </div>
+/* Sentence Lab — Spanish Bootstrapping Edition
+   Fixes:
+   - Duplicate tokens (e.g., "the", "the") are interchangeable (graded by word-multiset, not index).
+   - Adds Skip+Log + Report Error + Download Log buttons.
+   - Removes dependent/independent clause levels (not essential for Spanish 101 bootstrapping).
+   - Scrambles by default.
 
-    <div class="status">
-      <div><span id="levelLabel">Level 1</span> · <span id="conceptLabel">Verb First</span></div>
-      <div class="small">Score: <span id="score">0</span> · Streak: <span id="streak">0</span></div>
-    </div>
-  </header>
+   Works with your existing style.css.
 
-  <main class="grid">
-    <section class="card">
-      <h2>Mission</h2>
-      <p id="mission"></p>
+   Required IDs:
+   levelLabel, conceptLabel, mission, bridge, bank, built, feedback, checks, hint,
+   score, streak, nextBtn, checkBtn, resetBtn, undoBtn, shuffleBtn, hintBtn,
+   skipBtn, reportBtn, downloadLogBtn, logStatus
+*/
 
-      <div class="hintbox">
-        <button id="hintBtn" class="btn ghost">Hint</button>
-        <p id="hint" class="hint"></p>
-      </div>
+// ----------------------------- Levels -----------------------------
+const LEVELS = [
+  // 1) VERB FIRST
+  {
+    id: 1,
+    concept: "Find the VERB (the heartbeat)",
+    mission:
+      "Click the verb (or the verb idea: helping + main verb). In Spanish, the verb carries a lot of meaning — train your eyes to find it first.",
+    bridge:
+      "Spanish verbs encode WHO + WHEN (and later, even DOUBT). If you can find the verb fast, Spanish sentences stop feeling mysterious.",
+    hint:
+      "Verb = what happens (walks, closes) or what links description (is/are/was). Helping verbs (will/can/has) can join the main verb.",
+    puzzles: [
+      { type: "selectWords", prompt: "Select the VERB.", sentence: "She studies Spanish at night.", accept: [["studies"]], explain: "studies is the action (the heartbeat)." },
+      { type: "selectWords", prompt: "Select the VERB.", sentence: "The store closes at eight on weekdays.", accept: [["closes"]], explain: "closes is the action." },
+      { type: "selectWords", prompt: "Select the VERB (linking).", sentence: "They are ready for the exam.", accept: [["are"]], explain: "are links the subject to a description." },
+      { type: "selectWords", prompt: "Select the VERB IDEA (helping + main).", sentence: "We will practice tomorrow.", accept: [["will", "practice"]], explain: "will + practice function together as a future verb idea." },
+    ],
+  },
 
-      <div class="bridge">
-        <h3>Spanish Bridge</h3>
-        <p id="bridge"></p>
-      </div>
-    </section>
+  // 2) SUBJECT (accept head noun OR full subject phrase)
+  {
+    id: 2,
+    concept: "Find the SUBJECT (who is doing it?)",
+    mission:
+      "Click the subject (who/what does the verb). For beginners, the *core subject* is enough — but try to grab the full subject phrase when you can.",
+    bridge:
+      "Spanish often drops the subject word, but the subject still exists logically. You’re training that logic now.",
+    hint:
+      "Ask: who/what is doing the verb? Ignore time/place phrases at the beginning.",
+    puzzles: [
+      {
+        type: "selectWords",
+        prompt: "Select the SUBJECT (core noun is ok; full phrase is even better).",
+        sentence: "The happy student studies Spanish.",
+        accept: [["student"], ["the", "happy", "student"]],
+        explain: "Core subject = student. Full subject phrase = the happy student."
+      },
+      {
+        type: "selectWords",
+        prompt: "Select the SUBJECT (don’t get tricked by place words).",
+        sentence: "In the library, my friends read quietly.",
+        // NOTE: accept either friends OR my friends (fixes the exact pain you hit)
+        accept: [["friends"], ["my", "friends"]],
+        explain: "Subject = (my) friends. ‘In the library’ is extra place info."
+      },
+      {
+        type: "selectWords",
+        prompt: "Select the SUBJECT (compound).",
+        sentence: "Maria and Luis practice every day.",
+        accept: [["maria", "and", "luis"], ["maria"], ["luis"]],
+        explain: "Maria and Luis is a compound subject. (Core recognition: Maria/Luis.)"
+      },
+      {
+        type: "selectWords",
+        prompt: "Select the SUBJECT (time word first).",
+        sentence: "Yesterday, the team won the game.",
+        accept: [["team"], ["the", "team"]],
+        explain: "Subject = (the) team. ‘Yesterday’ is a time marker."
+      },
+    ],
+  },
 
-    <section class="card">
-      <h2>Your Answer</h2>
-      <div id="built" class="built" aria-live="polite"></div>
+  // 3) TAG QUESTIONS → PRONOUN DISCOVERY
+  {
+    id: 3,
+    concept: "Tag Questions → Discover pronouns",
+    mission:
+      "Choose the correct tag. Tag questions force you to ‘point’ at the subject with a pronoun.",
+    bridge:
+      "This trains subject–verb pairing. In Spanish, the verb ending often does the pointing instead of a separate pronoun.",
+    hint:
+      "Match (1) pronoun to the subject (Natalie→she), and (2) auxiliary/tense (is→isn't, walked→didn't).",
+    puzzles: [
+      { type: "mc", prompt: "Choose the best tag ending.", stem: "Natalie is a student, _____?", options: ["isn't she", "aren't they", "doesn't she", "isn't it"], answerIndex: 0, explain: "Natalie → she. is → isn't she." },
+      { type: "mc", prompt: "Choose the best tag ending.", stem: "The store closes at eight, _____?", options: ["doesn't it", "isn't it", "don't it", "didn't it"], answerIndex: 0, explain: "The store → it. Present simple uses does → doesn't it." },
+      { type: "mc", prompt: "Choose the best tag ending.", stem: "Matthew walked to the gym, _____?", options: ["didn't he", "doesn't he", "wasn't he", "isn't he"], answerIndex: 0, explain: "Past simple uses did → didn't he. Matthew → he." },
+      { type: "mc", prompt: "Choose the best tag ending.", stem: "Those students are ready, _____?", options: ["aren't they", "isn't it", "don't they", "aren't we"], answerIndex: 0, explain: "Those students → they. are → aren't they." },
+    ],
+  },
 
-      <div class="row">
-        <button id="undoBtn" class="btn ghost">Undo</button>
-        <button id="resetBtn" class="btn ghost">Reset</button>
-        <button id="checkBtn" class="btn">Check</button>
-      </div>
+  // 4) PROPER NOUN → PRONOUN + “who is the subject?”
+  {
+    id: 4,
+    concept: "Swap proper nouns for pronouns",
+    mission:
+      "Pick the best pronoun replacement for the subject. This is how you keep sentences from getting repetitive.",
+    bridge:
+      "Spanish can drop pronouns, but you still need to know what pronoun the verb would point to (yo/tú/él/ella/nosotros/ellos).",
+    hint:
+      "Ask: man/woman/thing/group? Use he/she/it/they/we/I.",
+    puzzles: [
+      { type: "mc", prompt: "Replace the subject with the best pronoun.", stem: "John studies Spanish. → _____ studies Spanish.", options: ["He", "She", "They", "It"], answerIndex: 0, explain: "John → He." },
+      { type: "mc", prompt: "Replace the subject with the best pronoun.", stem: "Monmouth University is big. → _____ is big.", options: ["He", "She", "It", "They"], answerIndex: 2, explain: "A university is a thing → It." },
+      { type: "mc", prompt: "Replace the subject with the best pronoun.", stem: "Maria and Luis practice. → _____ practice.", options: ["They", "We", "She", "It"], answerIndex: 0, explain: "Two people → They." },
+      { type: "mc", prompt: "Replace the subject with the best pronoun.", stem: "My friends and I are ready. → _____ are ready.", options: ["They", "We", "I", "You"], answerIndex: 1, explain: "My friends and I → We." },
+    ],
+  },
 
-      <p id="feedback" class="feedback" aria-live="polite"></p>
-    </section>
+  // 5) AGREEMENT (spot + fix)
+  {
+    id: 5,
+    concept: "Subject–Verb Agreement",
+    mission:
+      "Spot agreement errors and fix them. If agreement matters in English, it matters more in Spanish.",
+    bridge:
+      "Spanish agreement is stronger: verbs change clearly with the subject. This prepares you for Spanish verb endings.",
+    hint:
+      "Present: he/she/it often adds -s (walks). Plural usually does not (walk).",
+    puzzles: [
+      { type: "fix", prompt: "Fix the agreement error.", sentence: "The students studies Spanish.", choices: ["study", "studies"], answerIndex: 0, explain: "students = plural → study (no -s)." },
+      { type: "fix", prompt: "Fix the agreement error.", sentence: "He walk to class every day.", choices: ["walk", "walks"], answerIndex: 1, explain: "he = 3rd singular → walks." },
+      { type: "fix", prompt: "Fix the agreement error.", sentence: "My friend and I is late.", choices: ["are", "am"], answerIndex: 0, explain: "My friend and I = we → are." },
+      { type: "fix", prompt: "Fix the agreement error (meaning matters).", sentence: "Each student have a book.", choices: ["has", "have"], answerIndex: 0, explain: "Each student = singular meaning → has." },
+    ],
+  },
 
-    <section class="card wide">
-      <h2>Word Bank</h2>
-      <div id="bank" class="bank"></div>
+  // 6) TENSE + CERTAINTY
+  {
+    id: 6,
+    concept: "Verb Time + Certainty",
+    mission:
+      "Fix tense mismatches and classify certainty (certain vs uncertain).",
+    bridge:
+      "Spanish encodes time inside the verb — and later you’ll meet ‘mood’ (certainty/doubt). You’re training the idea now.",
+    hint:
+      "Yesterday/tomorrow must match the verb. might/may = uncertain. will/definitely = more certain.",
+    puzzles: [
+      { type: "fix", prompt: "Fix the tense mismatch.", sentence: "Yesterday, she walks to class.", choices: ["walked", "walks"], answerIndex: 0, explain: "Yesterday = past → walked." },
+      { type: "fix", prompt: "Fix the tense mismatch.", sentence: "Tomorrow, we practiced in the library.", choices: ["will practice", "practiced"], answerIndex: 0, explain: "Tomorrow = future → will practice." },
+      { type: "classify", prompt: "Is this certain or uncertain?", sentence: "He might come later.", options: ["certain", "uncertain"], answerIndex: 1, explain: "might signals uncertainty." },
+      { type: "classify", prompt: "Is this certain or uncertain?", sentence: "She will definitely pass.", options: ["certain", "uncertain"], answerIndex: 0, explain: "will + definitely = strong certainty." },
+    ],
+  },
 
-      <div class="row right">
-        <button id="shuffleBtn" class="btn ghost">Shuffle</button>
-        <button id="nextBtn" class="btn" disabled>Next</button>
-      </div>
-    </section>
+  // 7) ADJECTIVES + SPANISH PLACEMENT (plus find adjectives)
+  {
+    id: 7,
+    concept: "Adjectives + Spanish word order",
+    mission:
+      "Identify adjectives (describe nouns), then practice Spanish-style placement (noun + adjective).",
+    bridge:
+      "Common Spanish pattern: noun + adjective (coche rojo). This is one of the first big ‘feel’ differences.",
+    hint:
+      "Adjective describes a noun. In Spanish, many adjectives usually come AFTER the noun.",
+    puzzles: [
+      { type: "selectWords", prompt: "Select the ADJECTIVE.", sentence: "The red car is fast.", accept: [["red"]], explain: "red describes car. Spanish often: el coche rojo." },
+      { type: "selectWords", prompt: "Select the ADJECTIVE.", sentence: "A serious professor explains the lesson.", accept: [["serious"]], explain: "serious describes professor." },
+      { type: "reorder", prompt: "Build in Spanish order: (article + noun + adjective)", bank: ["rojo", "coche", "el"], answers: [["el", "coche", "rojo"]], explain: "Spanish commonly: noun + adjective → el coche rojo." },
+      { type: "reorder", prompt: "Build in Spanish order: (article + noun + adjective)", bank: ["la", "clase", "difícil"], answers: [["la", "clase", "difícil"]], explain: "la clase difícil (noun + adjective)." },
+    ],
+  },
 
-    <section class="card wide">
-      <h2>Quick Checks</h2>
-      <ul id="checks" class="checks"></ul>
+  // 8) ADVERBS (quick) + GOOD vs WELL (Spanish: bueno vs bien)
+  {
+    id: 8,
+    concept: "Adverbs (how?) — and a classic trap",
+    mission:
+      "Find the adverb and fix the good/well mistake (because Spanish makes a similar distinction: bueno vs bien).",
+    bridge:
+      "English ‘well’ (adverb) ≈ Spanish ‘bien’. English ‘good’ (adjective) ≈ Spanish ‘bueno’.",
+    hint:
+      "Adverb describes a verb (often -ly, but not always).",
+    puzzles: [
+      { type: "selectWords", prompt: "Select the ADVERB.", sentence: "She speaks clearly in class.", accept: [["clearly"]], explain: "clearly describes speaks (how she speaks)." },
+      { type: "selectWords", prompt: "Select the ADVERB.", sentence: "They studied hard for the exam.", accept: [["hard"]], explain: "hard describes studied (how they studied)." },
+      { type: "fix", prompt: "Fix the modifier form (good vs well).", sentence: "She speaks good.", choices: ["well", "good"], answerIndex: 0, explain: "speaks needs an adverb: well. Spanish parallel: bien vs bueno." },
+      { type: "fix", prompt: "Fix the modifier form (good vs well).", sentence: "He did good on the quiz.", choices: ["well", "good"], answerIndex: 0, explain: "did needs an adverb: well." },
+    ],
+  },
 
-      <div class="row right">
-        <button id="skipBtn" class="btn ghost">Skip + Log</button>
-        <button id="reportBtn" class="btn ghost">Report Error</button>
-        <button id="downloadLogBtn" class="btn ghost">Download Log (JSON)</button>
-      </div>
+  // 9) POSSESSION — NO APOSTROPHE-S IN SPANISH
+  {
+    id: 9,
+    concept: "Possession: no apostrophe-s in Spanish",
+    mission:
+      "Rewrite apostrophe-s as ‘of’ (English paraphrase) and preview Spanish ‘de’. This is *very* high value for Spanish beginners.",
+    bridge:
+      "Spanish does NOT use apostrophe-s. Instead: de → el libro de Juan = John’s book.",
+    hint:
+      "English: John's book → the book of John. Spanish: el libro de Juan.",
+    puzzles: [
+      { type: "mc", prompt: "Rewrite without apostrophe-s.", stem: "John's book →", options: ["the book of John", "the John's book", "the book John's"], answerIndex: 0, explain: "Correct: the book of John." },
+      { type: "mc", prompt: "Rewrite without apostrophe-s.", stem: "Monmouth University's campus →", options: ["the campus of Monmouth University", "Monmouth University campus of", "the campus Monmouth University's"], answerIndex: 0, explain: "Correct: the campus of Monmouth University." },
+      { type: "reorder", prompt: "Build the English ‘of’ phrase (no apostrophe-s):", bank: ["book", "of", "John", "the"], answers: [["the", "book", "of", "john"]], explain: "English paraphrase that matches Spanish logic." },
+      { type: "reorder", prompt: "Spanish preview (structure only):", bank: ["de", "Juan", "libro", "el"], answers: [["el", "libro", "de", "juan"]], explain: "Spanish possession uses de: el libro de Juan." },
+      { type: "mc", prompt: "Choose the best Spanish-logic paraphrase (English).", stem: "Lisa's car →", options: ["the car of Lisa", "Lisa car", "the Lisa's car"], answerIndex: 0, explain: "the car of Lisa (Spanish logic). Spanish: el coche de Lisa." },
+    ],
+  },
 
-      <p class="small" id="logStatus" aria-live="polite"></p>
-    </section>
-  </main>
+  // 10) FINAL MINI MIX
+  {
+    id: 10,
+    concept: "Final Mix: verb + subject + adjective placement + possession",
+    mission:
+      "Last round: quick hits. You’re building the exact instincts that make Spanish feel learnable.",
+    bridge:
+      "VERB → SUBJECT → modifiers → ‘de’ possession. That’s the core early-roadmap.",
+    hint:
+      "Go in order: VERB first. SUBJECT next. Adjectives describe nouns. Possession uses ‘of/de’.",
+    puzzles: [
+      { type: "selectWords", prompt: "Select the VERB.", sentence: "My friends will visit tomorrow.", accept: [["will", "visit"]], explain: "will + visit = one future verb idea." },
+      { type: "selectWords", prompt: "Select the SUBJECT.", sentence: "My friends will visit tomorrow.", accept: [["friends"], ["my", "friends"]], explain: "Subject = (my) friends." },
+      { type: "reorder", prompt: "Spanish order: article + noun + adjective", bank: ["el", "perro", "grande"], answers: [["el", "perro", "grande"]], explain: "el perro grande (noun + adjective)." },
+      { type: "mc", prompt: "Rewrite without apostrophe-s.", stem: "the student's name →", options: ["the name of the student", "the student's of name", "the name student's"], answerIndex: 0, explain: "the name of the student (Spanish logic)." },
+    ],
+  },
+];
 
-  <footer class="foot">
-    <span class="small">
-      Tip: In Spanish, the verb ending often “points” to the subject — that’s why we train VERB → SUBJECT first.
-    </span>
-  </footer>
+// ----------------------------- DOM -----------------------------
+const els = {
+  levelLabel: document.getElementById("levelLabel"),
+  conceptLabel: document.getElementById("conceptLabel"),
+  mission: document.getElementById("mission"),
+  bridge: document.getElementById("bridge"),
+  bank: document.getElementById("bank"),
+  built: document.getElementById("built"),
+  feedback: document.getElementById("feedback"),
+  checks: document.getElementById("checks"),
+  hint: document.getElementById("hint"),
+  score: document.getElementById("score"),
+  streak: document.getElementById("streak"),
+  nextBtn: document.getElementById("nextBtn"),
+  checkBtn: document.getElementById("checkBtn"),
+  resetBtn: document.getElementById("resetBtn"),
+  undoBtn: document.getElementById("undoBtn"),
+  shuffleBtn: document.getElementById("shuffleBtn"),
+  hintBtn: document.getElementById("hintBtn"),
+  skipBtn: document.getElementById("skipBtn"),
+  reportBtn: document.getElementById("reportBtn"),
+  downloadLogBtn: document.getElementById("downloadLogBtn"),
+  logStatus: document.getElementById("logStatus"),
+};
 
-  <script src="game.js"></script>
-</body>
-</html>
+// ----------------------------- State -----------------------------
+let levelIndex = 0;
+let puzzleIndex = 0;
+
+let score = 0;
+let streak = 0;
+
+// selection state = token IDs (not indices)
+let selectedIds = new Set();
+
+// reorder state
+let builtOrder = [];
+
+// stable token objects for the current puzzle
+let currentTokens = [];   // [{id, text, norm, rawIndex}]
+let scrambleOrder = [];   // array of token ids in scrambled order
+
+// logging
+const LOG_KEY = "sentence_lab_log_v1";
+
+// ----------------------------- Helpers -----------------------------
+function currentLevel() { return LEVELS[levelIndex]; }
+function currentPuzzle() { return currentLevel().puzzles[puzzleIndex]; }
+
+function tokenize(sentence) {
+  // keep punctuation as separate tokens
+  const parts = sentence
+    .replace(/([,.!?;:])/g, " $1 ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ");
+
+  // build stable token objects with unique IDs (so duplicates like "the" are safe)
+  return parts.map((t, i) => ({
+    id: `t${i}_${Math.random().toString(16).slice(2)}`, // unique per render
+    text: t,
+    norm: t.toLowerCase(),
+    rawIndex: i
+  }));
+}
+
+function normalizeTokens(tokens) {
+  const noSpaceBefore = new Set([",", ".", "!", "?", ";", ":"]);
+  let out = "";
+  tokens.forEach((t, i) => {
+    const tok = typeof t === "string" ? t : t.text;
+    if (i === 0) { out += tok; return; }
+    if (noSpaceBefore.has(tok)) out += tok;
+    else out += " " + tok;
+  });
+  return out.trim();
+}
+
+function multiset(arr) {
+  const m = new Map();
+  for (const x of arr) m.set(x, (m.get(x) || 0) + 1);
+  return m;
+}
+
+function multisetsEqual(a, b) {
+  if (a.size !== b.size) return false;
+  for (const [k, v] of a.entries()) {
+    if (b.get(k) !== v) return false;
+  }
+  return true;
+}
+
+function shuffleArray(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function setFeedback(msg, kind) {
+  els.feedback.textContent = msg;
+  els.feedback.classList.remove("good", "bad");
+  if (kind) els.feedback.classList.add(kind);
+}
+
+function updateStats() {
+  els.score.textContent = String(score);
+  els.streak.textContent = String(streak);
+}
+
+function renderBuiltPanel(text) {
+  els.built.textContent = text || "…";
+}
+
+function clearInteractionState() {
+  selectedIds = new Set();
+  builtOrder = [];
+  currentTokens = [];
+  scrambleOrder = [];
+}
+
+function renderHeader() {
+  els.levelLabel.textContent = `Level ${currentLevel().id}`;
+  els.conceptLabel.textContent = currentLevel().concept;
+  els.mission.textContent = currentLevel().mission;
+  els.bridge.textContent = currentLevel().bridge;
+  els.hint.textContent = "";
+}
+
+function selectedWordsInOriginalOrder() {
+  const picked = currentTokens
+    .filter(t => selectedIds.has(t.id))
+    .sort((a, b) => a.rawIndex - b.rawIndex)
+    .map(t => t.norm);
+  return picked;
+}
+
+function selectionSummary() {
+  if (!currentTokens.length) return "…";
+  if (selectedIds.size === 0) return "Click words to select them (scrambled on purpose).";
+  const pickedText = currentTokens
+    .filter(t => selectedIds.has(t.id))
+    .sort((a, b) => a.rawIndex - b.rawIndex)
+    .map(t => t.text);
+  return `Selected: ${normalizeTokens(pickedText)}`;
+}
+
+// ----------------------------- Logging -----------------------------
+function loadLog() {
+  try {
+    const raw = localStorage.getItem(LOG_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLog(entries) {
+  localStorage.setItem(LOG_KEY, JSON.stringify(entries));
+}
+
+function logEvent(kind, extra = {}) {
+  const entries = loadLog();
+  const p = currentPuzzle();
+  entries.push({
+    ts: new Date().toISOString(),
+    kind,
+    level: currentLevel().id,
+    concept: currentLevel().concept,
+    puzzleType: p.type,
+    prompt: p.prompt || "",
+    sentence: p.sentence || p.stem || "",
+    selection: selectedWordsInOriginalOrder(),
+    built: builtOrder.slice(),
+    ...extra
+  });
+  saveLog(entries);
+  els.logStatus.textContent = `Logged: ${kind}. Total log entries: ${entries.length}`;
+}
+
+function downloadLog() {
+  const entries = loadLog();
+  const blob = new Blob([JSON.stringify(entries, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "sentence-lab-log.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  els.logStatus.textContent = `Downloaded log with ${entries.length} entries.`;
+}
+
+// ----------------------------- Render UI -----------------------------
+function renderControls() {
+  const p = currentPuzzle();
+  let html = `<li><strong>${escapeHtml(p.prompt || "")}</strong></li>`;
+
+  if (p.type === "mc") {
+    html += `<li class="small">Choose one:</li>`;
+    html += `<li>${p.options.map((opt, i) =>
+      `<button class="token" data-choice="${i}">${escapeHtml(opt)}</button>`
+    ).join(" ")}</li>`;
+  }
+
+  if (p.type === "classify") {
+    html += `<li class="small">Choose one:</li>`;
+    html += `<li>${p.options.map((opt, i) =>
+      `<button class="token" data-choice="${i}">${escapeHtml(opt)}</button>`
+    ).join(" ")}</li>`;
+  }
+
+  if (p.type === "fix") {
+    html += `<li class="small">Choose the correct fix:</li>`;
+    html += `<li>${p.choices.map((opt, i) =>
+      `<button class="token" data-choice="${i}">${escapeHtml(opt)}</button>`
+    ).join(" ")}</li>`;
+  }
+
+  if (p.type === "reorder") {
+    html += `<li class="small">Click words to build the phrase. Use Undo/Reset if needed.</li>`;
+  }
+
+  if (p.type === "selectWords") {
+    html += `<li class="small">Click the correct word(s) in the Word Bank, then press Check.</li>`;
+    html += `<li class="small">Duplicates are interchangeable (two “the” buttons are treated the same).</li>`;
+  }
+
+  els.checks.innerHTML = html;
+
+  // attach choice handlers
+  els.checks.querySelectorAll("[data-choice]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const i = Number(btn.getAttribute("data-choice"));
+      handleChoice(i);
+    });
+  });
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function renderSentenceBank() {
+  const p = currentPuzzle();
+  els.bank.innerHTML = "";
+
+  // REORDER PUZZLES
+  if (p.type === "reorder") {
+    // scramble bank by default each reset (we also allow Shuffle button)
+    const words = p.bank.slice();
+    // display exactly as provided (case preserved), but comparisons are normalized later
+    for (const w of words) {
+      const btn = document.createElement("button");
+      btn.className = "token";
+      btn.textContent = w;
+      btn.addEventListener("click", () => {
+        builtOrder.push(w);
+        setFeedback("", null);
+        els.nextBtn.disabled = true;
+        renderBuiltPanel(normalizeTokens(builtOrder));
+      });
+      els.bank.appendChild(btn);
+    }
+    renderBuiltPanel(builtOrder.length ? normalizeTokens(builtOrder) : "Build the phrase here…");
+    return;
+  }
+
+  // MC/FIX/CLASSIFY: show sentence in built panel; no token bank
+  if (p.type === "mc") { renderBuiltPanel(p.stem); return; }
+  if (p.type === "fix" || p.type === "classify") { renderBuiltPanel(p.sentence); return; }
+
+  // SELECT WORDS: show scrambled token buttons (by token ID)
+  currentTokens = tokenize(p.sentence);
+
+  // scramble order (ids)
+  if (scrambleOrder.length !== currentTokens.length) {
+    scrambleOrder = shuffleArray(currentTokens.map(t => t.id));
+  }
+
+  for (const id of scrambleOrder) {
+    const tok = currentTokens.find(t => t.id === id);
+    const btn = document.createElement("button");
+    btn.className = "token";
+    btn.textContent = tok.text;
+
+    if (selectedIds.has(tok.id)) {
+      btn.style.borderColor = "#6ee7ff";
+    }
+
+    btn.addEventListener("click", () => {
+      if (selectedIds.has(tok.id)) selectedIds.delete(tok.id);
+      else selectedIds.add(tok.id);
+      setFeedback("", null);
+      els.nextBtn.disabled = true;
+      // rerender to update highlight
+      renderSentenceBank();
+      renderBuiltPanel(selectionSummary());
+    });
+
+    els.bank.appendChild(btn);
+  }
+
+  renderBuiltPanel(selectionSummary());
+}
+
+function resetPuzzle() {
+  selectedIds = new Set();
+  builtOrder = [];
+  currentTokens = [];
+  scrambleOrder = []; // force new scramble
+  setFeedback("", null);
+  els.nextBtn.disabled = true;
+
+  // scramble reorder bank by default
+  const p = currentPuzzle();
+  if (p.type === "reorder" && Array.isArray(p.bank)) {
+    p.bank = shuffleArray(p.bank);
+  }
+
+  renderControls();
+  renderSentenceBank();
+}
+
+function shufflePuzzle() {
+  const p = currentPuzzle();
+
+  if (p.type === "reorder" && Array.isArray(p.bank)) {
+    p.bank = shuffleArray(p.bank);
+    renderSentenceBank();
+    setFeedback("Shuffled.", null);
+    return;
+  }
+
+  // selectWords: reshuffle display order only
+  if (p.type === "selectWords") {
+    scrambleOrder = shuffleArray(scrambleOrder);
+    renderSentenceBank();
+    setFeedback("Shuffled.", null);
+    return;
+  }
+
+  setFeedback("Nothing to shuffle on this puzzle type.", null);
+}
+
+function undo() {
+  const p = currentPuzzle();
+
+  if (p.type === "reorder") {
+    builtOrder.pop();
+    els.nextBtn.disabled = true;
+    renderBuiltPanel(builtOrder.length ? normalizeTokens(builtOrder) : "Build the phrase here…");
+    return;
+  }
+
+  // for selection: undo last-selected (by most recent insertion)
+  if (selectedIds.size === 0) return;
+  const arr = Array.from(selectedIds);
+  selectedIds.delete(arr[arr.length - 1]);
+  els.nextBtn.disabled = true;
+  renderSentenceBank();
+}
+
+// ----------------------------- Checking -----------------------------
+function handleChoice(choiceIndex) {
+  const p = currentPuzzle();
+  if (p.type !== "mc" && p.type !== "fix" && p.type !== "classify") return;
+
+  const correct = (choiceIndex === p.answerIndex);
+  if (correct) {
+    score += 3;
+    streak += 1;
+    updateStats();
+    setFeedback(`✅ Correct. ${p.explain || ""}`, "good");
+    els.nextBtn.disabled = false;
+    logEvent("correct_choice");
+  } else {
+    streak = 0;
+    updateStats();
+    setFeedback(`❌ Not quite. ${currentLevel().hint}`, "bad");
+    els.nextBtn.disabled = true;
+    logEvent("wrong_choice", { chosenIndex: choiceIndex });
+  }
+}
+
+function checkSelectWords() {
+  const p = currentPuzzle();
+  const picked = selectedWordsInOriginalOrder(); // normalized words, in original order
+
+  // Compare as multiset against any acceptable word-set
+  const pickedMS = multiset(picked);
+
+  const ok = (p.accept || []).some(wordSet => {
+    const normSet = wordSet.map(w => String(w).toLowerCase());
+    return multisetsEqual(pickedMS, multiset(normSet));
+  });
+
+  if (ok) {
+    score += 3;
+    streak += 1;
+    updateStats();
+    setFeedback(`✅ Correct. ${p.explain || ""}`, "good");
+    els.nextBtn.disabled = false;
+    logEvent("correct_selectWords");
+  } else {
+    streak = 0;
+    updateStats();
+    const pickedPretty = currentTokens
+      .filter(t => selectedIds.has(t.id))
+      .sort((a, b) => a.rawIndex - b.rawIndex)
+      .map(t => t.text);
+
+    setFeedback(
+      `❌ Not quite. You selected: "${normalizeTokens(pickedPretty)}". ${currentLevel().hint}`,
+      "bad"
+    );
+    els.nextBtn.disabled = true;
+    logEvent("wrong_selectWords");
+  }
+}
+
+function checkReorder() {
+  const p = currentPuzzle();
+  const builtNorm = builtOrder.map(w => String(w).toLowerCase());
+  const builtStr = builtNorm.join(" ");
+
+  const ok = (p.answers || []).some(ans => {
+    const ansNorm = ans.map(w => String(w).toLowerCase()).join(" ");
+    return ansNorm === builtStr;
+  });
+
+  if (ok) {
+    score += 4;
+    streak += 1;
+    updateStats();
+    setFeedback(`✅ Correct. ${p.explain || ""}`, "good");
+    els.nextBtn.disabled = false;
+    logEvent("correct_reorder");
+  } else {
+    streak = 0;
+    updateStats();
+    setFeedback(`❌ Not quite. You built: "${normalizeTokens(builtOrder)}". Reset and try again.`, "bad");
+    els.nextBtn.disabled = true;
+    logEvent("wrong_reorder");
+  }
+}
+
+function checkAnswer() {
+  const p = currentPuzzle();
+
+  if (p.type === "mc" || p.type === "fix" || p.type === "classify") {
+    setFeedback("Choose an option in Quick Checks.", "bad");
+    return;
+  }
+
+  if (p.type === "reorder") {
+    checkReorder();
+    return;
+  }
+
+  if (p.type === "selectWords") {
+    checkSelectWords();
+    return;
+  }
+
+  setFeedback("Unsupported puzzle type.", "bad");
+}
+
+function next() {
+  const lvl = currentLevel();
+
+  if (puzzleIndex < lvl.puzzles.length - 1) {
+    puzzleIndex += 1;
+    resetPuzzle();
+    setFeedback("Next challenge.", null);
+    return;
+  }
+
+  if (levelIndex < LEVELS.length - 1) {
+    levelIndex += 1;
+    puzzleIndex = 0;
+    renderHeader();
+    resetPuzzle();
+    setFeedback("Level up. New concept unlocked.", "good");
+    return;
+  }
+
+  setFeedback("🏁 Finished Sentence Lab Bootcamp. You’re ready for early Spanish structure.", "good");
+  els.nextBtn.disabled = true;
+  els.checkBtn.disabled = true;
+  renderBuiltPanel(makeCompletionSummary());
+  logEvent("completed_game");
+}
+
+function makeCompletionSummary() {
+  const code = `SL-${LEVELS.length}-${score}-${Math.floor(Math.random() * 9000 + 1000)}`;
+  return [
+    "Sentence Lab — Completion Summary",
+    "--------------------------------",
+    `Levels Completed: ${LEVELS.length}/${LEVELS.length}`,
+    `Score: ${score}`,
+    "",
+    "What I can do now:",
+    "- Find the verb first (the heartbeat).",
+    "- Identify the subject (who does the verb).",
+    "- Use tag questions to discover pronouns.",
+    "- Fix agreement and tense mismatches.",
+    "- Identify adjectives/adverbs and apply Spanish adjective placement (noun + adjective).",
+    "- Rewrite apostrophe-s possession as ‘of’ / Spanish ‘de’.",
+    "",
+    `Verification Code: ${code}`
+  ].join("\n");
+}
+
+// ----------------------------- Skip + Report -----------------------------
+function skipAndLog() {
+  logEvent("skipped");
+  setFeedback("⏭️ Skipped (logged). Moving on.", null);
+  els.nextBtn.disabled = false;
+  next();
+}
+
+function reportError() {
+  const p = currentPuzzle();
+  const note = prompt(
+    "Describe the issue (what you clicked, what you expected). This will be saved in the local log.\n\nExample: 'Two “the” buttons — selecting either should work.'",
+    ""
+  );
+  if (note === null) return;
+
+  logEvent("reported_error", { note });
+  setFeedback("🧾 Error reported (saved locally). You can Download Log (JSON).", null);
+}
+
+// ----------------------------- Init -----------------------------
+function init() {
+  renderHeader();
+  updateStats();
+  resetPuzzle();
+
+  els.checkBtn.addEventListener("click", checkAnswer);
+  els.resetBtn.addEventListener("click", resetPuzzle);
+  els.undoBtn.addEventListener("click", undo);
+  els.shuffleBtn.addEventListener("click", shufflePuzzle);
+  els.nextBtn.addEventListener("click", next);
+  els.hintBtn.addEventListener("click", () => { els.hint.textContent = currentLevel().hint; });
+
+  els.skipBtn.addEventListener("click", skipAndLog);
+  els.reportBtn.addEventListener("click", reportError);
+  els.downloadLogBtn.addEventListener("click", downloadLog);
+
+  // Enter to check
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") checkAnswer();
+  });
+}
+
+init();
