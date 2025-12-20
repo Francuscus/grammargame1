@@ -35,12 +35,28 @@
     <section class="card">
       <h2>Your Sentence</h2>
       <div id="built" class="built" aria-live="polite"></div>
+
       <div class="row">
         <button id="undoBtn" class="btn ghost">Undo</button>
         <button id="resetBtn" class="btn ghost">Reset</button>
         <button id="checkBtn" class="btn">Check</button>
+
+        <!-- FAILSAFE (hidden until repeated failures) -->
+        <button
+          id="failsafeBtn"
+          class="btn ghost"
+          type="button"
+          style="display:none"
+          title="Use this if you tried multiple options and the game keeps marking everything wrong."
+        >
+          I suspect an error — Skip question
+        </button>
       </div>
+
       <p id="feedback" class="feedback" aria-live="polite"></p>
+
+      <!-- Optional debug line (JS can toggle on/off). Safe to keep. -->
+      <p id="debug" class="small" style="display:none; opacity:.75;"></p>
     </section>
 
     <section class="card wide">
