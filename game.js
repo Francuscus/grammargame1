@@ -1,132 +1,126 @@
 /* Sentence Lab — Sentence X-Ray Edition (English → Spanish Bootstrapping)
+   FULL GAME.JS (scrambled by default)
+
    Drop-in replacement for your existing game.js.
-   Assumes your HTML has IDs: levelLabel, conceptLabel, mission, bridge, bank, built,
-   feedback, checks, hint, score, streak, nextBtn, checkBtn, resetBtn, undoBtn,
-   shuffleBtn, hintBtn.
+   Uses your existing index.html + style.css (no HTML changes required).
+
+   Expected HTML IDs:
+   levelLabel, conceptLabel, mission, bridge, bank, built, feedback, checks, hint,
+   score, streak, nextBtn, checkBtn, resetBtn, undoBtn, shuffleBtn, hintBtn
 */
 
+// ----------------------------- Levels -----------------------------
 const LEVELS = [
-  // ------------------ LEVEL 1 ------------------
+  // 1) VERB FIRST
   {
     id: 1,
     concept: "Find the VERB (always first)",
     mission:
-      "Click the verb (the action or linking verb). If you can’t find the verb, you can’t read the sentence.",
+      "Click the verb (action or linking). If you can’t find the verb, you can’t read the sentence.",
     bridge:
-      "Spanish hides a lot inside the verb (who + time). Training your eyes to find the verb first makes Spanish feel logical.",
+      "Spanish packs WHO + TIME into the verb. If you train your eyes to find verbs first, Spanish stops feeling random.",
     hint:
-      "The verb is what is happening (runs, studied) or what connects a description (is, seems).",
+      "Verb = what happens (studies, closes) or what connects description (is/are/was).",
     puzzles: [
       {
         type: "select",
         prompt: "Select the VERB.",
         sentence: "She studies Spanish at night.",
         targets: [{ label: "verb", indices: [1] }],
-        explain:
-          "studies = the action. Spanish later packs WHO + TIME into the verb ending.",
+        explain: "studies is the action (the heartbeat).",
       },
       {
         type: "select",
         prompt: "Select the VERB.",
         sentence: "The store closes at eight on weekdays.",
         targets: [{ label: "verb", indices: [2] }],
-        explain:
-          "closes is the verb. Notice the subject is not just the first word; it’s the thing doing the verb.",
+        explain: "closes is the action. Everything else is extra info.",
       },
       {
         type: "select",
         prompt: "Select the VERB (linking verb).",
         sentence: "They are ready for the exam.",
         targets: [{ label: "verb", indices: [1] }],
-        explain:
-          "are is a linking verb: it connects the subject to a description (ready).",
+        explain: "are links the subject to a description (ready).",
       },
       {
         type: "select",
-        prompt: "Select the VERB (helping verb phrase).",
+        prompt: "Select the VERB IDEA (helping + main verb).",
         sentence: "We will practice tomorrow.",
         targets: [{ label: "verb", indices: [1, 2] }],
-        explain:
-          "will practice functions as the verb idea. Spanish often expresses future differently; the key is seeing the verb meaning.",
+        explain: "will practice functions as one verb idea (future).",
       },
     ],
   },
 
-  // ------------------ LEVEL 2 ------------------
+  // 2) SUBJECT
   {
     id: 2,
     concept: "Find the SUBJECT (who is doing it?)",
     mission:
       "Click the subject (the person/thing doing the verb). Sometimes it’s more than one word.",
     bridge:
-      "Spanish can drop the subject word, but the subject still exists logically. You’re training that logic now.",
+      "Spanish often drops the subject word, but the subject still exists logically. You’re building that logic now.",
     hint:
-      "Ask: Who/what is doing the verb? Don’t confuse the subject with extra information.",
+      "Ask: who/what is doing the verb? Ignore time/place phrases at the beginning.",
     puzzles: [
       {
         type: "select",
-        prompt: "Select the SUBJECT.",
+        prompt: "Select the SUBJECT (full subject phrase).",
         sentence: "The happy student studies Spanish.",
         targets: [{ label: "subject", indices: [0, 1, 2] }],
-        explain:
-          "The happy student = the subject chunk. student is the core noun; the adjective is part of the subject phrase.",
+        explain: "The happy student = full subject phrase (core noun: student).",
       },
       {
         type: "select",
-        prompt: "Select the SUBJECT.",
+        prompt: "Select the SUBJECT (not the first word).",
         sentence: "In the library, my friends read quietly.",
         targets: [{ label: "subject", indices: [3, 4] }],
-        explain:
-          "my friends = subject. The prepositional phrase 'In the library' is extra (where).",
-      },
-      {
-        type: "select",
-        prompt: "Select the SUBJECT (it’s not the first word).",
-        sentence: "Yesterday, the team won the game.",
-        targets: [{ label: "subject", indices: [1, 2] }],
-        explain:
-          "the team = subject. Yesterday is a time marker, not the subject.",
+        explain: "my friends = subject. In the library = extra place info.",
       },
       {
         type: "select",
         prompt: "Select the SUBJECT (compound subject).",
         sentence: "Maria and Luis practice every day.",
         targets: [{ label: "subject", indices: [0, 1, 2] }],
-        explain:
-          "Maria and Luis = compound subject. Two people share the same verb.",
+        explain: "Maria and Luis = two subjects sharing one verb.",
+      },
+      {
+        type: "select",
+        prompt: "Select the SUBJECT (it comes after a time word).",
+        sentence: "Yesterday, the team won the game.",
+        targets: [{ label: "subject", indices: [1, 2] }],
+        explain: "the team = subject. Yesterday = time marker.",
       },
     ],
   },
 
-  // ------------------ LEVEL 3 ------------------
+  // 3) TAG QUESTIONS → PRONOUN DISCOVERY
   {
     id: 3,
-    concept: "Tag Questions → Pronouns (discover the subject)",
+    concept: "Tag Questions → Discover pronouns",
     mission:
-      "Use tag questions to identify the hidden subject pronoun (and how English ‘points’ to the subject).",
+      "Choose the correct tag ending. Tags force you to ‘point’ at the subject with a pronoun.",
     bridge:
-      "This trains you to feel subject–verb pairing. In Spanish, the verb ending often does this pointing for you.",
+      "This trains subject–verb pairing. In Spanish, the verb ending often does the pointing instead of a pronoun.",
     hint:
-      "Tags mirror the auxiliary and pronoun: 'He is… isn’t he?' 'They studied… didn’t they?'",
+      "Match: (1) pronoun to the subject (Natalie→she), and (2) auxiliary/tense (is→isn't, walked→didn't).",
     puzzles: [
       {
         type: "mc",
-        prompt:
-          "Choose the best tag question ending (the tag that matches the subject + verb).",
+        prompt: "Choose the best tag ending.",
         stem: "Natalie is a student, _____?",
         options: ["isn't she", "aren't they", "doesn't she", "isn't it"],
         answerIndex: 0,
-        explain:
-          "Natalie → she. 'is' becomes 'isn't' in the tag: isn't she?",
+        explain: "Natalie → she. is → isn't she.",
       },
       {
         type: "mc",
         prompt: "Choose the best tag ending.",
         stem: "The store closes at eight, _____?",
-        options: ["doesn't it", "isn't it", "doesn't it close", "isn't there"],
+        options: ["doesn't it", "isn't it", "don't it", "didn't it"],
         answerIndex: 0,
-        explain:
-          "The store → it. Present simple needs do/does: doesn't it?",
+        explain: "The store → it. Present simple uses do/does → doesn't it.",
       },
       {
         type: "mc",
@@ -134,31 +128,75 @@ const LEVELS = [
         stem: "Matthew walked to the gym, _____?",
         options: ["didn't he", "doesn't he", "wasn't he", "isn't he"],
         answerIndex: 0,
-        explain:
-          "Past simple uses did: didn't he? Matthew → he.",
+        explain: "Past simple uses did → didn't he. Matthew → he.",
       },
       {
         type: "mc",
-        prompt: "Choose the best tag ending (plural subject).",
+        prompt: "Choose the best tag ending.",
         stem: "Those students are ready, _____?",
-        options: ["aren't they", "isn't it", "aren't we", "don't they"],
+        options: ["aren't they", "isn't it", "don't they", "aren't we"],
         answerIndex: 0,
-        explain:
-          "Those students → they. Verb 'are' → aren't they?",
+        explain: "Those students → they. are → aren't they.",
       },
     ],
   },
 
-  // ------------------ LEVEL 4 ------------------
+  // 4) PROPER NOUN → PRONOUN (explicit practice)
   {
     id: 4,
+    concept: "Replace proper nouns with pronouns (without changing meaning)",
+    mission:
+      "Pick the best pronoun replacement for the subject. This is how you keep sentences from getting repetitive.",
+    bridge:
+      "Spanish can drop pronouns, but you still need to know what pronoun the verb points to (yo/tú/él/ella/nosotros/ellos).",
+    hint:
+      "Ask: is the subject a man, a woman, a thing, or a group? Use he/she/it/they/we/I.",
+    puzzles: [
+      {
+        type: "mc",
+        prompt: "Replace the subject with the best pronoun.",
+        stem: "John studies Spanish. → _____ studies Spanish.",
+        options: ["He", "She", "They", "It"],
+        answerIndex: 0,
+        explain: "John → He.",
+      },
+      {
+        type: "mc",
+        prompt: "Replace the subject with the best pronoun.",
+        stem: "Monmouth University is big. → _____ is big.",
+        options: ["He", "She", "It", "They"],
+        answerIndex: 2,
+        explain: "A university is a thing → It.",
+      },
+      {
+        type: "mc",
+        prompt: "Replace the subject with the best pronoun.",
+        stem: "Maria and Luis practice. → _____ practice.",
+        options: ["They", "We", "She", "It"],
+        answerIndex: 0,
+        explain: "Two people → They.",
+      },
+      {
+        type: "mc",
+        prompt: "Replace the subject with the best pronoun.",
+        stem: "My friends and I are ready. → _____ are ready.",
+        options: ["They", "We", "I", "You"],
+        answerIndex: 1,
+        explain: "My friends and I → We.",
+      },
+    ],
+  },
+
+  // 5) AGREEMENT
+  {
+    id: 5,
     concept: "Subject–Verb Agreement (English → Spanish)",
     mission:
-      "Spot agreement errors and fix them. If agreement matters in English, it matters even more in Spanish.",
+      "Spot agreement errors and fix them. If agreement matters in English, it matters more in Spanish.",
     bridge:
-      "Spanish agreement is stronger: verb endings change clearly with the subject. This level prepares your brain for that.",
+      "Spanish agreement is stronger: verbs change clearly with the subject. This prepares you for Spanish verb endings.",
     hint:
-      "Singular subject usually takes -s in present (he/she/it studies). Plural does not (they study).",
+      "Present: he/she/it usually adds -s (walks). Plural usually does not (walk).",
     puzzles: [
       {
         type: "fix",
@@ -166,49 +204,45 @@ const LEVELS = [
         sentence: "The students studies Spanish.",
         choices: ["study", "studies"],
         answerIndex: 0,
-        explain:
-          "students = plural → study (no -s). In Spanish, plural agreement is very visible too.",
+        explain: "students = plural → study (no -s).",
+      },
+      {
+        type: "fix",
+        prompt: "Fix the agreement error.",
+        sentence: "He walk to class every day.",
+        choices: ["walk", "walks"],
+        answerIndex: 1,
+        explain: "he = 3rd singular → walks.",
       },
       {
         type: "fix",
         prompt: "Fix the agreement error.",
         sentence: "My friend and I is late.",
-        choices: ["am", "are"],
-        answerIndex: 1,
-        explain:
-          "My friend and I = we → are. (English is irregular here; Spanish will match consistently.)",
+        choices: ["are", "am"],
+        answerIndex: 0,
+        explain: "My friend and I = we → are.",
       },
       {
         type: "fix",
-        prompt: "Fix the agreement error.",
+        prompt: "Fix the agreement error (meaning matters).",
         sentence: "Each student have a book.",
         choices: ["has", "have"],
         answerIndex: 0,
-        explain:
-          "Each student = singular in meaning → has. Agreement can depend on meaning, not just nearby words.",
-      },
-      {
-        type: "fix",
-        prompt: "Fix the agreement error (third person singular).",
-        sentence: "He walk to class every day.",
-        choices: ["walk", "walks"],
-        answerIndex: 1,
-        explain:
-          "He = 3rd singular → walks. Spanish will show this change in the verb ending too.",
+        explain: "Each student = singular meaning → has.",
       },
     ],
   },
 
-  // ------------------ LEVEL 5 ------------------
+  // 6) TENSE + CERTAINTY
   {
-    id: 5,
-    concept: "Verb Tense & Reality (time + certainty)",
+    id: 6,
+    concept: "Verb Time & Reality (tense + certainty)",
     mission:
-      "Match the verb to the time word, and notice certainty words (might/may/definitely).",
+      "Fix tense mismatches and classify certainty (certain vs uncertain).",
     bridge:
-      "Spanish verbs carry time inside them. Later, Spanish also encodes ‘certainty vs doubt’ with mood.",
+      "Spanish encodes time inside the verb, and later you’ll see mood (certainty/doubt). You’re training the idea now.",
     hint:
-      "Time markers (yesterday/now/tomorrow) must match the verb. Might/may = uncertain.",
+      "Yesterday/tomorrow must match the verb. might/may = uncertain. will/definitely = more certain.",
     puzzles: [
       {
         type: "fix",
@@ -216,17 +250,7 @@ const LEVELS = [
         sentence: "Yesterday, she walks to class.",
         choices: ["walked", "walks"],
         answerIndex: 0,
-        explain:
-          "Yesterday = past → walked. Spanish past will show in the verb ending too.",
-      },
-      {
-        type: "classify",
-        prompt: "Classify the sentence: is it certain or uncertain?",
-        sentence: "He might come later.",
-        options: ["certain", "uncertain"],
-        answerIndex: 1,
-        explain:
-          "might signals uncertainty. This is a preview of how Spanish mood will matter later.",
+        explain: "Yesterday = past → walked.",
       },
       {
         type: "fix",
@@ -234,154 +258,143 @@ const LEVELS = [
         sentence: "Tomorrow, we practiced in the library.",
         choices: ["will practice", "practiced"],
         answerIndex: 0,
-        explain:
-          "Tomorrow = future → will practice. Spanish can express future in different ways, but the logic is the same.",
+        explain: "Tomorrow = future → will practice.",
       },
       {
         type: "classify",
-        prompt: "Classify the sentence: certain or uncertain?",
+        prompt: "Is this certain or uncertain?",
+        sentence: "He might come later.",
+        options: ["certain", "uncertain"],
+        answerIndex: 1,
+        explain: "might signals uncertainty.",
+      },
+      {
+        type: "classify",
+        prompt: "Is this certain or uncertain?",
         sentence: "She will definitely pass.",
         options: ["certain", "uncertain"],
         answerIndex: 0,
-        explain:
-          "will + definitely = strong certainty.",
+        explain: "will + definitely = strong certainty.",
       },
     ],
   },
 
-  // ------------------ LEVEL 6 ------------------
+  // 7) SENTENCE vs PHRASE
   {
-    id: 6,
+    id: 7,
     concept: "Sentence vs Phrase (does it breathe?)",
     mission:
-      "Decide whether a chunk is a sentence or just a phrase. A sentence needs a subject+verb pair (unless command).",
+      "Decide whether a chunk is a sentence or a phrase. A sentence needs a subject+verb pair (except commands).",
     bridge:
-      "Spanish often uses implied subjects; still, the verb is the heartbeat. You’re learning to detect the heartbeat.",
+      "Spanish often implies the subject. Still: the verb is the heartbeat. If you can detect the heartbeat, you can read.",
     hint:
-      "Phrase = no complete subject+verb pair. Sentence = has it. Commands can be a single verb in English.",
+      "Phrase = incomplete idea. Sentence = complete thought (subject+verb). Commands count as sentences.",
     puzzles: [
       {
         type: "mc",
-        prompt: "Is this a sentence or a phrase?",
+        prompt: "Sentence or phrase?",
         stem: "Running fast",
         options: ["sentence", "phrase"],
         answerIndex: 1,
-        explain:
-          "Running fast has no clear subject+finite verb pair. It’s a phrase.",
+        explain: "No clear subject + finite verb → phrase.",
       },
       {
         type: "mc",
-        prompt: "Is this a sentence or a phrase?",
+        prompt: "Sentence or phrase?",
         stem: "She is running fast.",
         options: ["sentence", "phrase"],
         answerIndex: 0,
-        explain:
-          "Subject (she) + verb (is running) = sentence.",
+        explain: "Subject (she) + verb (is running) → sentence.",
       },
       {
         type: "mc",
-        prompt: "Is this a sentence or a phrase? (command rule)",
+        prompt: "Sentence or phrase? (command rule)",
         stem: "Sit down.",
         options: ["sentence", "phrase"],
         answerIndex: 0,
-        explain:
-          "Commands can be sentences with an implied subject (you). Spanish does this constantly.",
+        explain: "Command = sentence with implied subject (you).",
       },
       {
         type: "mc",
-        prompt: "Is this a sentence or a phrase?",
+        prompt: "Sentence or phrase?",
         stem: "Because she was tired",
         options: ["sentence", "phrase"],
         answerIndex: 1,
-        explain:
-          "It has subject+verb, but it can’t stand alone. It’s a dependent clause (functioning like a phrase here).",
+        explain: "Dependent clause can’t stand alone → functions as incomplete chunk here.",
       },
     ],
   },
 
-  // ------------------ LEVEL 7 ------------------
+  // 8) CLAUSES
   {
-    id: 7,
-    concept: "Clauses (independent vs dependent)",
+    id: 8,
+    concept: "Independent vs Dependent Clauses",
     mission:
-      "Find the independent clause (can stand alone) and the dependent clause (can’t stand alone).",
+      "Select the dependent clause (can’t stand alone), then the independent clause (can stand alone).",
     bridge:
       "Spanish readings chain clauses. If you can spot the independent clause, long Spanish sentences stop being scary.",
     hint:
-      "Dependent clauses often start with because/although/when/if. Independent clauses can stand alone.",
+      "Dependent often starts with because/although/when/if. Independent clause can stand alone as a sentence.",
     puzzles: [
       {
         type: "dual-select",
-        prompt:
-          "Select the DEPENDENT clause, then select the INDEPENDENT clause.",
+        prompt: "Select DEPENDENT clause, then INDEPENDENT clause.",
         sentence: "Because she was tired, she went home.",
         dependent: [0, 1, 2, 3],
         independent: [5, 6, 7],
-        explain:
-          "Because she was tired = dependent. she went home = independent.",
+        explain: "Because she was tired = dependent. she went home = independent.",
       },
       {
         type: "dual-select",
-        prompt:
-          "Select the DEPENDENT clause, then select the INDEPENDENT clause.",
+        prompt: "Select DEPENDENT clause, then INDEPENDENT clause.",
         sentence: "Although they studied, they failed the quiz.",
         dependent: [0, 1, 2],
         independent: [4, 5, 6, 7],
-        explain:
-          "Although they studied = dependent. they failed the quiz = independent.",
+        explain: "Although they studied = dependent. they failed the quiz = independent.",
       },
       {
         type: "dual-select",
-        prompt:
-          "Select the DEPENDENT clause, then select the INDEPENDENT clause.",
+        prompt: "Select DEPENDENT clause, then INDEPENDENT clause.",
         sentence: "When the class ended, the students left quickly.",
         dependent: [0, 1, 2, 3],
         independent: [5, 6, 7, 8],
-        explain:
-          "When the class ended = dependent. the students left quickly = independent.",
+        explain: "When the class ended = dependent. the students left quickly = independent.",
       },
     ],
   },
 
-  // ------------------ LEVEL 8 ------------------
+  // 9) ADJECTIVES + SPANISH PLACEMENT + ADVERBS
   {
-    id: 8,
-    concept: "Adjectives & Adverbs (and Spanish word order shock)",
+    id: 9,
+    concept: "Adjectives & Adverbs + Spanish adjective placement",
     mission:
-      "Identify adjectives vs adverbs, and practice Spanish-style adjective placement (noun + adjective).",
+      "Identify adjectives/adverbs, then practice Spanish-style adjective placement (noun + adjective).",
     bridge:
-      "Spanish often places adjectives after the noun (coche rojo). You’ll practice that movement explicitly.",
+      "Common Spanish pattern: noun + adjective (coche rojo). You’ll practice that movement explicitly.",
     hint:
       "Adjective describes a noun. Adverb describes a verb (often ends -ly in English).",
     puzzles: [
       {
         type: "select",
-        prompt: "Select the ADJECTIVE (describes a noun).",
+        prompt: "Select the ADJECTIVE.",
         sentence: "The red car is fast.",
         targets: [{ label: "adjective", indices: [1] }],
-        explain:
-          "red describes car. Later: el coche rojo (noun + adjective) in Spanish is common.",
+        explain: "red describes car. Spanish often: el coche rojo (noun + adjective).",
       },
       {
         type: "select",
-        prompt: "Select the ADVERB (describes the verb).",
+        prompt: "Select the ADVERB.",
         sentence: "She speaks clearly in class.",
         targets: [{ label: "adverb", indices: [2] }],
-        explain:
-          "clearly describes speaks. Spanish often uses an adverb similarly (claramente).",
+        explain: "clearly describes speaks (how she speaks).",
       },
       {
         type: "reorder",
         prompt:
-          "Spanish order practice: click words to build the Spanish-style noun phrase (noun + adjective).",
-        bank:
-          ["rojo", "coche", "el"],
-        answers: [
-          ["el", "coche", "rojo"]
-        ],
-        explain:
-          "Spanish typically places the adjective after the noun: el coche rojo.",
-        spanishTip: "Notice what moved: 'red car' → 'coche rojo'."
+          "Spanish placement practice: build the phrase in Spanish order (article + noun + adjective).",
+        bank: ["rojo", "coche", "el"],
+        answers: [["el", "coche", "rojo"]],
+        explain: "Spanish commonly places the adjective after the noun: el coche rojo.",
       },
       {
         type: "fix",
@@ -389,31 +402,84 @@ const LEVELS = [
         sentence: "She speaks good.",
         choices: ["well", "good"],
         answerIndex: 0,
-        explain:
-          "speaks needs an adverb: well. Spanish parallels: bien vs bueno.",
+        explain: "speaks needs an adverb: well. Spanish parallels: bien vs bueno.",
       },
     ],
   },
 
-  // ------------------ FINAL: X-RAY MODE ------------------
+  // 10) POSSESSION — NO APOSTROPHE-S IN SPANISH
   {
-    id: 9,
+    id: 10,
+    concept: "Possession: Spanish has no apostrophe-s",
+    mission:
+      "Practice rewriting English apostrophe-s as 'of' (and preview Spanish 'de').",
+    bridge:
+      "Spanish does NOT use apostrophe-s. Instead it uses 'de': el libro de Juan = John’s book.",
+    hint:
+      "English: John's book → the book of John. Spanish: el libro de Juan.",
+    puzzles: [
+      {
+        type: "mc",
+        prompt: "Rewrite in English without apostrophe-s (choose the best).",
+        stem: "John's book →",
+        options: ["the book of John", "the John's book", "the book John's"],
+        answerIndex: 0,
+        explain: "Correct: the book of John. This mirrors Spanish structure.",
+      },
+      {
+        type: "mc",
+        prompt: "Rewrite in English without apostrophe-s (choose the best).",
+        stem: "Monmouth University's campus →",
+        options: ["the campus of Monmouth University", "Monmouth University campus of", "the campus Monmouth University's"],
+        answerIndex: 0,
+        explain: "Correct: the campus of Monmouth University.",
+      },
+      {
+        type: "reorder",
+        prompt:
+          "Build the English 'of' phrase (no apostrophe-s):",
+        bank: ["book", "of", "John", "the"],
+        answers: [["the", "book", "of", "John"]],
+        explain: "English paraphrase that matches Spanish logic: the book of John.",
+      },
+      {
+        type: "reorder",
+        prompt:
+          "Spanish preview (structure only): build the Spanish-style phrase:",
+        bank: ["de", "Juan", "libro", "el"],
+        answers: [["el", "libro", "de", "Juan"]],
+        explain: "Spanish possession uses de: el libro de Juan.",
+      },
+      {
+        type: "mc",
+        prompt: "Choose the best Spanish-logic paraphrase (English).",
+        stem: "Lisa's car →",
+        options: ["the car of Lisa", "Lisa car", "the Lisa's car"],
+        answerIndex: 0,
+        explain: "the car of Lisa (English paraphrase). Spanish: el coche de Lisa.",
+      },
+    ],
+  },
+
+  // 11) FINAL X-RAY
+  {
+    id: 11,
     concept: "Final X-Ray (full diagnosis)",
     mission:
-      "Full diagnosis: identify verbs, subjects, dependent clause, independent clause, adjective, and adverb.",
+      "Full scan: verbs, subjects, dependent clause, independent clause, adjective, adverb.",
     bridge:
       "If you can do this in English, Spanish structure becomes a puzzle you can actually solve.",
     hint:
-      "Go in order: VERB → SUBJECT → clauses → modifiers.",
+      "Go in order: VERB → SUBJECT → CLAUSES → MODIFIERS.",
     puzzles: [
       {
         type: "xray",
         prompt:
-          "Step through the targets in order. You must correctly tag each part to finish.",
+          "Step through the targets. You must correctly tag each part to finish.",
         sentence:
           "Although the students were tired, they studied carefully in the library.",
         xrayTargets: [
-          { label: "verb", prompt: "Select the VERB(s).", indices: [3, 7] }, // were, studied
+          { label: "verb", prompt: "Select the VERB(S).", indices: [3, 7] }, // were, studied
           { label: "subject", prompt: "Select the SUBJECT of the dependent clause.", indices: [1, 2] }, // the students
           { label: "dependent", prompt: "Select the DEPENDENT clause.", indices: [0, 1, 2, 3, 4] }, // Although the students were tired
           { label: "independent", prompt: "Select the INDEPENDENT clause.", indices: [6, 7, 8, 9, 10, 11] }, // they studied carefully in the library
@@ -421,13 +487,13 @@ const LEVELS = [
           { label: "adverb", prompt: "Select the ADVERB.", indices: [8] }, // carefully
         ],
         explain:
-          "You just did the full grammar scan: verb(s), subjects, clause structure, modifiers. This is the mental toolkit Spanish rewards.",
+          "You just did the full grammar scan. This is exactly the skill Spanish rewards.",
       },
     ],
   },
 ];
 
-// --------------------- DOM ---------------------
+// ----------------------------- DOM -----------------------------
 const els = {
   levelLabel: document.getElementById("levelLabel"),
   conceptLabel: document.getElementById("conceptLabel"),
@@ -448,29 +514,30 @@ const els = {
   hintBtn: document.getElementById("hintBtn"),
 };
 
-// --------------------- State ---------------------
+// ----------------------------- State -----------------------------
 let levelIndex = 0;
 let puzzleIndex = 0;
 
 let score = 0;
 let streak = 0;
 
-// token-selection state for select/dual-select/xray
+// selection state
 let selected = new Set();
 
 // reorder state
 let builtOrder = [];
 
-// xray step
-let xrayStep = 0;
+// multi-step state used by dual-select and xray
+let step = 0;
 
-// helpers
+// scramble seed for consistent redraw within a puzzle
+let scrambleOrder = [];
+
+// ----------------------------- Helpers -----------------------------
 function currentLevel() { return LEVELS[levelIndex]; }
 function currentPuzzle() { return currentLevel().puzzles[puzzleIndex]; }
 
 function tokenize(sentence) {
-  // tokenizes words and keeps punctuation as tokens
-  // e.g., "tired, they" => ["tired", ",", "they"]
   return sentence
     .replace(/([,.!?;:])/g, " $1 ")
     .replace(/\s+/g, " ")
@@ -489,6 +556,15 @@ function normalizeTokens(tokens) {
   return out.trim();
 }
 
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function setFeedback(msg, kind) {
   els.feedback.textContent = msg;
   els.feedback.classList.remove("good", "bad");
@@ -500,6 +576,33 @@ function updateStats() {
   els.streak.textContent = String(streak);
 }
 
+function shuffledIndices(n) {
+  const idx = Array.from({ length: n }, (_, i) => i);
+  for (let i = idx.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [idx[i], idx[j]] = [idx[j], idx[i]];
+  }
+  return idx;
+}
+
+function selectionSummary(tokens) {
+  if (!tokens || tokens.length === 0) return "…";
+  if (selected.size === 0) return "Click words to select them (buttons are scrambled on purpose).";
+  const picked = Array.from(selected).sort((a, b) => a - b).map(i => tokens[i]);
+  return `Selected: ${normalizeTokens(picked)}`;
+}
+
+function renderBuiltPanel(text) {
+  els.built.textContent = text || "…";
+}
+
+function clearInteractionState() {
+  selected = new Set();
+  builtOrder = [];
+  step = 0;
+  scrambleOrder = [];
+}
+
 function renderHeader() {
   els.levelLabel.textContent = `Level ${currentLevel().id}`;
   els.conceptLabel.textContent = currentLevel().concept;
@@ -508,22 +611,18 @@ function renderHeader() {
   els.hint.textContent = "";
 }
 
-function clearInteractionState() {
-  selected = new Set();
-  builtOrder = [];
-  xrayStep = 0;
-}
-
-function renderBuiltPanel(text) {
-  els.built.textContent = text || "…";
-}
-
 function renderControls() {
-  // Put the current task prompt + any options inside #checks
   const p = currentPuzzle();
   let html = `<li><strong>${escapeHtml(p.prompt || "")}</strong></li>`;
 
-  if (p.type === "mc" || p.type === "classify") {
+  if (p.type === "mc") {
+    html += `<li class="small">Choose one:</li>`;
+    html += `<li>${p.options.map((opt, i) =>
+      `<button class="token" data-choice="${i}">${escapeHtml(opt)}</button>`
+    ).join(" ")}</li>`;
+  }
+
+  if (p.type === "classify") {
     html += `<li class="small">Choose one:</li>`;
     html += `<li>${p.options.map((opt, i) =>
       `<button class="token" data-choice="${i}">${escapeHtml(opt)}</button>`
@@ -538,24 +637,22 @@ function renderControls() {
   }
 
   if (p.type === "dual-select") {
-    html += `<li class="small">You will do TWO selections. First dependent, then independent (the game will prompt you).</li>`;
+    html += `<li class="small"><em>Two steps:</em> first select the dependent clause, then the independent clause.</li>`;
+    html += `<li class="small">Current step: <strong>${step === 0 ? "DEPENDENT" : "INDEPENDENT"}</strong></li>`;
   }
 
   if (p.type === "xray") {
-    const step = p.xrayTargets[xrayStep];
-    html += `<li class="small">X-Ray Step ${xrayStep + 1}/${p.xrayTargets.length}: <em>${escapeHtml(step.prompt)}</em></li>`;
+    const t = p.xrayTargets[step];
+    html += `<li class="small">X-Ray Step ${step + 1}/${p.xrayTargets.length}: <em>${escapeHtml(t.prompt)}</em></li>`;
   }
 
   if (p.type === "reorder") {
-    html += `<li class="small">Click words to build the target phrase. Use Undo/Reset as needed.</li>`;
-    if (p.spanishTip) {
-      html += `<li class="small"><em>${escapeHtml(p.spanishTip)}</em></li>`;
-    }
+    html += `<li class="small">Click words to build the phrase. Use Undo/Reset if needed.</li>`;
   }
 
   els.checks.innerHTML = html;
 
-  // attach handlers for choice buttons if present
+  // attach choice handlers
   els.checks.querySelectorAll("[data-choice]").forEach(btn => {
     btn.addEventListener("click", () => {
       const i = Number(btn.getAttribute("data-choice"));
@@ -564,26 +661,16 @@ function renderControls() {
   });
 }
 
-function escapeHtml(s) {
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
 function renderSentenceBank() {
   const p = currentPuzzle();
   els.bank.innerHTML = "";
 
+  // REORDER PUZZLES: show word bank buttons (scrambled by default in reset)
   if (p.type === "reorder") {
-    // show bank words for reorder task
-    p.bank.forEach((w, idx) => {
+    p.bank.forEach((w) => {
       const btn = document.createElement("button");
       btn.className = "token";
       btn.textContent = w;
-
       btn.addEventListener("click", () => {
         builtOrder.push(w);
         setFeedback("", null);
@@ -596,16 +683,30 @@ function renderSentenceBank() {
     return;
   }
 
-  // otherwise: show sentence tokens clickable for selection
-  const sentence = (p.sentence || p.stem || "").trim();
+  // MC/FIX/CLASSIFY: no token bank needed, but show the sentence clearly
+  if (p.type === "mc") {
+    renderBuiltPanel(p.stem);
+    return;
+  }
+  if (p.type === "fix" || p.type === "classify") {
+    renderBuiltPanel(p.sentence);
+    return;
+  }
+
+  // SELECTION PUZZLES: show scrambled clickable tokens (grading uses real indices)
+  const sentence = (p.sentence || "").trim();
   const tokens = tokenize(sentence);
 
-  tokens.forEach((tok, idx) => {
+  // Keep scramble order stable while the student interacts with the same puzzle
+  if (scrambleOrder.length !== tokens.length) scrambleOrder = shuffledIndices(tokens.length);
+
+  scrambleOrder.forEach((idx) => {
+    const tok = tokens[idx];
     const btn = document.createElement("button");
     btn.className = "token";
     btn.textContent = tok;
 
-    // reflect selection
+    // selected highlight
     if (selected.has(idx)) {
       btn.style.borderColor = "#6ee7ff";
     }
@@ -622,20 +723,24 @@ function renderSentenceBank() {
     els.bank.appendChild(btn);
   });
 
+  // Also show the student what they picked (in normal order)
   renderBuiltPanel(selectionSummary(tokens));
-}
-
-function selectionSummary(tokens) {
-  if (!tokens || tokens.length === 0) return "…";
-  if (selected.size === 0) return "Click words in the sentence to select them.";
-  const picked = Array.from(selected).sort((a,b)=>a-b).map(i => tokens[i]);
-  return `Selected: ${normalizeTokens(picked)}`;
 }
 
 function resetPuzzle() {
   clearInteractionState();
   setFeedback("", null);
   els.nextBtn.disabled = true;
+
+  // Scramble reorder bank by default (so it starts challenging)
+  const p = currentPuzzle();
+  if (p.type === "reorder" && Array.isArray(p.bank)) {
+    for (let i = p.bank.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [p.bank[i], p.bank[j]] = [p.bank[j], p.bank[i]];
+    }
+  }
+
   renderControls();
   renderSentenceBank();
 }
@@ -648,27 +753,27 @@ function shufflePuzzle() {
       [p.bank[i], p.bank[j]] = [p.bank[j], p.bank[i]];
     }
     renderSentenceBank();
-  } else {
-    // for selection tasks, shuffle doesn't make sense (sentence order matters).
-    setFeedback("Shuffle is only used in Spanish-order phrase building challenges.", "bad");
+    setFeedback("Shuffled.", null);
+    return;
   }
+  // For selection puzzles, tokens are already scrambled by default.
+  setFeedback("Tokens are already scrambled for selection puzzles.", null);
 }
 
 function undo() {
   const p = currentPuzzle();
   if (p.type === "reorder") {
     builtOrder.pop();
-    renderBuiltPanel(builtOrder.length ? normalizeTokens(builtOrder) : "Build the phrase here…");
     els.nextBtn.disabled = true;
+    renderBuiltPanel(builtOrder.length ? normalizeTokens(builtOrder) : "Build the phrase here…");
     return;
   }
 
-  // selection undo: remove last selected index
   if (selected.size === 0) return;
   const arr = Array.from(selected);
   selected.delete(arr[arr.length - 1]);
-  renderSentenceBank();
   els.nextBtn.disabled = true;
+  renderSentenceBank();
 }
 
 function equalsSet(a, b) {
@@ -677,28 +782,9 @@ function equalsSet(a, b) {
   return true;
 }
 
-function checkSelect(targetIndices, tokens, labelForFeedback) {
-  const targetSet = new Set(targetIndices);
-  if (equalsSet(selected, targetSet)) {
-    score += 3;
-    streak += 1;
-    updateStats();
-    setFeedback(`✅ Correct ${labelForFeedback}! ${currentPuzzle().explain || ""}`, "good");
-    els.nextBtn.disabled = false;
-  } else {
-    streak = 0;
-    updateStats();
-    const picked = Array.from(selected).sort((a,b)=>a-b).map(i => tokens[i]);
-    setFeedback(
-      `❌ Not quite. You selected: "${normalizeTokens(picked)}". Try again. ${currentLevel().hint}`,
-      "bad"
-    );
-  }
-}
-
 function handleChoice(choiceIndex) {
   const p = currentPuzzle();
-  if (p.type !== "mc" && p.type !== "classify" && p.type !== "fix") return;
+  if (p.type !== "mc" && p.type !== "fix" && p.type !== "classify") return;
 
   const correct = (choiceIndex === p.answerIndex);
   if (correct) {
@@ -711,6 +797,29 @@ function handleChoice(choiceIndex) {
     streak = 0;
     updateStats();
     setFeedback(`❌ Not quite. ${currentLevel().hint}`, "bad");
+    els.nextBtn.disabled = true;
+  }
+}
+
+function checkSelect(tokens, label) {
+  const p = currentPuzzle();
+  const t = p.targets[0];
+  const targetSet = new Set(t.indices);
+
+  if (equalsSet(selected, targetSet)) {
+    score += 3;
+    streak += 1;
+    updateStats();
+    setFeedback(`✅ Correct ${label}! ${p.explain || ""}`, "good");
+    els.nextBtn.disabled = false;
+  } else {
+    streak = 0;
+    updateStats();
+    const picked = Array.from(selected).sort((a, b) => a - b).map(i => tokens[i]);
+    setFeedback(
+      `❌ Not quite. You selected: "${normalizeTokens(picked)}". ${currentLevel().hint}`,
+      "bad"
+    );
     els.nextBtn.disabled = true;
   }
 }
@@ -730,38 +839,36 @@ function checkReorder() {
     streak = 0;
     updateStats();
     setFeedback(`❌ Not quite. You built: "${builtStr}". Reset and try again.`, "bad");
+    els.nextBtn.disabled = true;
   }
 }
 
 function checkDualSelect(tokens) {
-  // Two-step: dependent then independent
   const p = currentPuzzle();
-  // We store phase in xrayStep variable for convenience: 0=dependent, 1=independent
-  const phase = xrayStep;
-
   const depSet = new Set(p.dependent);
   const indSet = new Set(p.independent);
 
-  if (phase === 0) {
+  if (step === 0) {
     if (equalsSet(selected, depSet)) {
       score += 2;
       streak += 1;
       updateStats();
       setFeedback("✅ Dependent clause correct. Now select the INDEPENDENT clause.", "good");
-      xrayStep = 1;
+      step = 1;
       selected = new Set();
+      scrambleOrder = []; // rescramble display for step 2
+      els.nextBtn.disabled = true;
       renderControls();
       renderSentenceBank();
-      els.nextBtn.disabled = true;
     } else {
       streak = 0;
       updateStats();
-      setFeedback(`❌ Not quite. Select the dependent clause (it can't stand alone).`, "bad");
+      setFeedback("❌ Not quite. Select the dependent clause (it can’t stand alone).", "bad");
     }
     return;
   }
 
-  // phase 1: independent
+  // step 1: independent
   if (equalsSet(selected, indSet)) {
     score += 3;
     streak += 1;
@@ -771,13 +878,14 @@ function checkDualSelect(tokens) {
   } else {
     streak = 0;
     updateStats();
-    setFeedback(`❌ Not quite. Select the clause that can stand alone.`, "bad");
+    setFeedback("❌ Not quite. Select the clause that can stand alone.", "bad");
+    els.nextBtn.disabled = true;
   }
 }
 
 function checkXray(tokens) {
   const p = currentPuzzle();
-  const target = p.xrayTargets[xrayStep];
+  const target = p.xrayTargets[step];
   const targetSet = new Set(target.indices);
 
   if (equalsSet(selected, targetSet)) {
@@ -786,19 +894,16 @@ function checkXray(tokens) {
     updateStats();
     setFeedback(`✅ ${target.label.toUpperCase()} correct.`, "good");
 
-    xrayStep += 1;
+    step += 1;
     selected = new Set();
+    scrambleOrder = []; // rescramble each step
     els.nextBtn.disabled = true;
 
-    if (xrayStep >= p.xrayTargets.length) {
-      // finished xray
-      score += 5;
+    if (step >= p.xrayTargets.length) {
+      score += 6;
       updateStats();
       setFeedback(`🏁 X-Ray complete. ${p.explain || ""}`, "good");
       els.nextBtn.disabled = false;
-      renderControls();
-      renderSentenceBank();
-      return;
     }
 
     renderControls();
@@ -807,29 +912,27 @@ function checkXray(tokens) {
     streak = 0;
     updateStats();
     setFeedback(`❌ Not quite. ${target.prompt}`, "bad");
+    els.nextBtn.disabled = true;
   }
 }
 
 function checkAnswer() {
-  const lvl = currentLevel();
   const p = currentPuzzle();
+
+  if (p.type === "mc" || p.type === "fix" || p.type === "classify") {
+    setFeedback("Choose an option in Quick Checks.", "bad");
+    return;
+  }
 
   if (p.type === "reorder") {
     checkReorder();
     return;
   }
 
-  if (p.type === "mc" || p.type === "classify" || p.type === "fix") {
-    setFeedback("Choose an option above (in Quick Checks).", "bad");
-    return;
-  }
-
-  const sentence = (p.sentence || p.stem || "").trim();
-  const tokens = tokenize(sentence);
+  const tokens = tokenize(p.sentence);
 
   if (p.type === "select") {
-    const t = p.targets[0];
-    checkSelect(t.indices, tokens, t.label);
+    checkSelect(tokens, p.targets[0].label);
     return;
   }
 
@@ -848,6 +951,7 @@ function checkAnswer() {
 
 function next() {
   const lvl = currentLevel();
+
   if (puzzleIndex < lvl.puzzles.length - 1) {
     puzzleIndex += 1;
     resetPuzzle();
@@ -865,40 +969,40 @@ function next() {
   }
 
   // Completed all levels
-  setFeedback("🏁 You finished Sentence X-Ray. You’re ready for Spanish structure.", "good");
+  setFeedback("🏁 You finished Sentence X-Ray Bootcamp. You’re ready for Spanish structure.", "good");
   els.nextBtn.disabled = true;
   els.checkBtn.disabled = true;
-
-  // Optional: show a copy-paste completion summary in the built panel
   renderBuiltPanel(makeCompletionSummary());
 }
 
 function makeCompletionSummary() {
-  const minutes = Math.max(1, Math.round((performance.now() / 1000) / 60));
+  const mins = Math.max(1, Math.round((performance.now() / 1000) / 60));
   const code = `SLX-${LEVELS.length}-${score}-${Math.floor(Math.random() * 9000 + 1000)}`;
   return [
     "Sentence X-Ray — Completion Summary",
-    "--------------------------------",
-    `Levels Completed: ${LEVELS.length} / ${LEVELS.length}`,
+    "----------------------------------",
+    `Levels Completed: ${LEVELS.length}/${LEVELS.length}`,
     `Score: ${score}`,
-    `Estimated time (this session): ~${minutes} min`,
+    `Estimated time: ~${mins} min`,
     "",
     "What I can do now:",
-    "- I can find the verb first (the sentence heartbeat).",
-    "- I can identify the subject (who is doing the verb).",
-    "- I can spot agreement and tense mismatches.",
-    "- I can tell sentence vs phrase.",
-    "- I can identify dependent vs independent clauses.",
-    "- I can identify adjectives vs adverbs and understand Spanish adjective placement.",
+    "- Find the verb first (the heartbeat).",
+    "- Identify the subject (who is doing the verb).",
+    "- Use tag questions to discover pronouns and subject–verb pairing.",
+    "- Spot agreement and tense mismatches.",
+    "- Tell sentence vs phrase.",
+    "- Identify dependent vs independent clauses.",
+    "- Identify adjectives/adverbs and understand Spanish adjective placement.",
+    "- Rewrite apostrophe-s possession as 'of' (Spanish uses 'de').",
     "",
     "Spanish Bridge:",
-    "In Spanish, the verb often contains WHO + TIME. This game trained me to see structure before learning forms.",
+    "Spanish often compresses meaning into verb endings and uses 'de' for possession.",
     "",
     `Verification Code: ${code}`
   ].join("\n");
 }
 
-// --------------------- Init / Wiring ---------------------
+// ----------------------------- Init -----------------------------
 function init() {
   renderHeader();
   updateStats();
