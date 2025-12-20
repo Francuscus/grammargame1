@@ -1,5 +1,7 @@
 /* Sentence Lab — Sentence X-Ray Edition (English → Spanish Bootstrapping)
    FULL GAME.JS (scrambled by default)
+   UPDATED: MC/FIX/CLASSIFY now require selecting an option AND pressing "Check"
+   (prevents the “skip question” feel)
 
    Drop-in replacement for your existing game.js.
    Uses your existing index.html + style.css (no HTML changes required).
@@ -320,7 +322,8 @@ const LEVELS = [
         stem: "Because she was tired",
         options: ["sentence", "phrase"],
         answerIndex: 1,
-        explain: "Dependent clause can’t stand alone → functions as incomplete chunk here.",
+        explain:
+          "Dependent clause can’t stand alone → functions as incomplete chunk here.",
       },
     ],
   },
@@ -342,7 +345,8 @@ const LEVELS = [
         sentence: "Because she was tired, she went home.",
         dependent: [0, 1, 2, 3],
         independent: [5, 6, 7],
-        explain: "Because she was tired = dependent. she went home = independent.",
+        explain:
+          "Because she was tired = dependent. she went home = independent.",
       },
       {
         type: "dual-select",
@@ -350,7 +354,8 @@ const LEVELS = [
         sentence: "Although they studied, they failed the quiz.",
         dependent: [0, 1, 2],
         independent: [4, 5, 6, 7],
-        explain: "Although they studied = dependent. they failed the quiz = independent.",
+        explain:
+          "Although they studied = dependent. they failed the quiz = independent.",
       },
       {
         type: "dual-select",
@@ -358,7 +363,8 @@ const LEVELS = [
         sentence: "When the class ended, the students left quickly.",
         dependent: [0, 1, 2, 3],
         independent: [5, 6, 7, 8],
-        explain: "When the class ended = dependent. the students left quickly = independent.",
+        explain:
+          "When the class ended = dependent. the students left quickly = independent.",
       },
     ],
   },
@@ -379,7 +385,8 @@ const LEVELS = [
         prompt: "Select the ADJECTIVE.",
         sentence: "The red car is fast.",
         targets: [{ label: "adjective", indices: [1] }],
-        explain: "red describes car. Spanish often: el coche rojo (noun + adjective).",
+        explain:
+          "red describes car. Spanish often: el coche rojo (noun + adjective).",
       },
       {
         type: "select",
@@ -394,7 +401,8 @@ const LEVELS = [
           "Spanish placement practice: build the phrase in Spanish order (article + noun + adjective).",
         bank: ["rojo", "coche", "el"],
         answers: [["el", "coche", "rojo"]],
-        explain: "Spanish commonly places the adjective after the noun: el coche rojo.",
+        explain:
+          "Spanish commonly places the adjective after the noun: el coche rojo.",
       },
       {
         type: "fix",
@@ -430,22 +438,24 @@ const LEVELS = [
         type: "mc",
         prompt: "Rewrite in English without apostrophe-s (choose the best).",
         stem: "Monmouth University's campus →",
-        options: ["the campus of Monmouth University", "Monmouth University campus of", "the campus Monmouth University's"],
+        options: [
+          "the campus of Monmouth University",
+          "Monmouth University campus of",
+          "the campus Monmouth University's",
+        ],
         answerIndex: 0,
         explain: "Correct: the campus of Monmouth University.",
       },
       {
         type: "reorder",
-        prompt:
-          "Build the English 'of' phrase (no apostrophe-s):",
+        prompt: "Build the English 'of' phrase (no apostrophe-s):",
         bank: ["book", "of", "John", "the"],
         answers: [["the", "book", "of", "John"]],
         explain: "English paraphrase that matches Spanish logic: the book of John.",
       },
       {
         type: "reorder",
-        prompt:
-          "Spanish preview (structure only): build the Spanish-style phrase:",
+        prompt: "Spanish preview (structure only): build the Spanish-style phrase:",
         bank: ["de", "Juan", "libro", "el"],
         answers: [["el", "libro", "de", "Juan"]],
         explain: "Spanish possession uses de: el libro de Juan.",
@@ -469,25 +479,21 @@ const LEVELS = [
       "Full scan: verbs, subjects, dependent clause, independent clause, adjective, adverb.",
     bridge:
       "If you can do this in English, Spanish structure becomes a puzzle you can actually solve.",
-    hint:
-      "Go in order: VERB → SUBJECT → CLAUSES → MODIFIERS.",
+    hint: "Go in order: VERB → SUBJECT → CLAUSES → MODIFIERS.",
     puzzles: [
       {
         type: "xray",
-        prompt:
-          "Step through the targets. You must correctly tag each part to finish.",
-        sentence:
-          "Although the students were tired, they studied carefully in the library.",
+        prompt: "Step through the targets. You must correctly tag each part to finish.",
+        sentence: "Although the students were tired, they studied carefully in the library.",
         xrayTargets: [
           { label: "verb", prompt: "Select the VERB(S).", indices: [3, 7] }, // were, studied
           { label: "subject", prompt: "Select the SUBJECT of the dependent clause.", indices: [1, 2] }, // the students
-          { label: "dependent", prompt: "Select the DEPENDENT clause.", indices: [0, 1, 2, 3, 4] }, // Although the students were tired
-          { label: "independent", prompt: "Select the INDEPENDENT clause.", indices: [6, 7, 8, 9, 10, 11] }, // they studied carefully in the library
+          { label: "dependent", prompt: "Select the DEPENDENT clause.", indices: [0, 1, 2, 3, 4] }, // Although...
+          { label: "independent", prompt: "Select the INDEPENDENT clause.", indices: [6, 7, 8, 9, 10, 11] }, // they studied...
           { label: "adjective", prompt: "Select the ADJECTIVE.", indices: [4] }, // tired
           { label: "adverb", prompt: "Select the ADVERB.", indices: [8] }, // carefully
         ],
-        explain:
-          "You just did the full grammar scan. This is exactly the skill Spanish rewards.",
+        explain: "You just did the full grammar scan. This is exactly the skill Spanish rewards.",
       },
     ],
   },
@@ -529,6 +535,9 @@ let builtOrder = [];
 
 // multi-step state used by dual-select and xray
 let step = 0;
+
+// for mc/fix/classify: user must select a choice, then press Check
+let chosenIndex = null;
 
 // scramble seed for consistent redraw within a puzzle
 let scrambleOrder = [];
@@ -601,6 +610,7 @@ function clearInteractionState() {
   builtOrder = [];
   step = 0;
   scrambleOrder = [];
+  chosenIndex = null;
 }
 
 function renderHeader() {
@@ -616,21 +626,21 @@ function renderControls() {
   let html = `<li><strong>${escapeHtml(p.prompt || "")}</strong></li>`;
 
   if (p.type === "mc") {
-    html += `<li class="small">Choose one:</li>`;
+    html += `<li class="small">Choose one (then press Check):</li>`;
     html += `<li>${p.options.map((opt, i) =>
       `<button class="token" data-choice="${i}">${escapeHtml(opt)}</button>`
     ).join(" ")}</li>`;
   }
 
   if (p.type === "classify") {
-    html += `<li class="small">Choose one:</li>`;
+    html += `<li class="small">Choose one (then press Check):</li>`;
     html += `<li>${p.options.map((opt, i) =>
       `<button class="token" data-choice="${i}">${escapeHtml(opt)}</button>`
     ).join(" ")}</li>`;
   }
 
   if (p.type === "fix") {
-    html += `<li class="small">Choose the correct fix:</li>`;
+    html += `<li class="small">Choose the correct fix (then press Check):</li>`;
     html += `<li>${p.choices.map((opt, i) =>
       `<button class="token" data-choice="${i}">${escapeHtml(opt)}</button>`
     ).join(" ")}</li>`;
@@ -652,11 +662,18 @@ function renderControls() {
 
   els.checks.innerHTML = html;
 
-  // attach choice handlers
+  // attach choice handlers (select only; grading happens on Check)
   els.checks.querySelectorAll("[data-choice]").forEach(btn => {
+    const i = Number(btn.getAttribute("data-choice"));
+
+    // highlight selected option
+    if (chosenIndex === i) btn.style.borderColor = "#6ee7ff";
+
     btn.addEventListener("click", () => {
-      const i = Number(btn.getAttribute("data-choice"));
-      handleChoice(i);
+      chosenIndex = i;
+      setFeedback("Selected. Now press Check.", null);
+      els.nextBtn.disabled = true; // do not allow advancing early
+      renderControls();            // re-render to update highlights
     });
   });
 }
@@ -665,7 +682,7 @@ function renderSentenceBank() {
   const p = currentPuzzle();
   els.bank.innerHTML = "";
 
-  // REORDER PUZZLES: show word bank buttons (scrambled by default in reset)
+  // REORDER PUZZLES
   if (p.type === "reorder") {
     p.bank.forEach((w) => {
       const btn = document.createElement("button");
@@ -683,21 +700,21 @@ function renderSentenceBank() {
     return;
   }
 
-  // MC/FIX/CLASSIFY: no token bank needed, but show the sentence clearly
+  // MC: show stem in built; no word bank
   if (p.type === "mc") {
     renderBuiltPanel(p.stem);
     return;
   }
+  // FIX/CLASSIFY: show sentence in built; no word bank
   if (p.type === "fix" || p.type === "classify") {
     renderBuiltPanel(p.sentence);
     return;
   }
 
-  // SELECTION PUZZLES: show scrambled clickable tokens (grading uses real indices)
+  // SELECTION PUZZLES: scrambled token buttons
   const sentence = (p.sentence || "").trim();
   const tokens = tokenize(sentence);
 
-  // Keep scramble order stable while the student interacts with the same puzzle
   if (scrambleOrder.length !== tokens.length) scrambleOrder = shuffledIndices(tokens.length);
 
   scrambleOrder.forEach((idx) => {
@@ -706,10 +723,7 @@ function renderSentenceBank() {
     btn.className = "token";
     btn.textContent = tok;
 
-    // selected highlight
-    if (selected.has(idx)) {
-      btn.style.borderColor = "#6ee7ff";
-    }
+    if (selected.has(idx)) btn.style.borderColor = "#6ee7ff";
 
     btn.addEventListener("click", () => {
       if (selected.has(idx)) selected.delete(idx);
@@ -723,7 +737,6 @@ function renderSentenceBank() {
     els.bank.appendChild(btn);
   });
 
-  // Also show the student what they picked (in normal order)
   renderBuiltPanel(selectionSummary(tokens));
 }
 
@@ -732,7 +745,7 @@ function resetPuzzle() {
   setFeedback("", null);
   els.nextBtn.disabled = true;
 
-  // Scramble reorder bank by default (so it starts challenging)
+  // Scramble reorder bank by default
   const p = currentPuzzle();
   if (p.type === "reorder" && Array.isArray(p.bank)) {
     for (let i = p.bank.length - 1; i > 0; i--) {
@@ -756,7 +769,6 @@ function shufflePuzzle() {
     setFeedback("Shuffled.", null);
     return;
   }
-  // For selection puzzles, tokens are already scrambled by default.
   setFeedback("Tokens are already scrambled for selection puzzles.", null);
 }
 
@@ -780,25 +792,6 @@ function equalsSet(a, b) {
   if (a.size !== b.size) return false;
   for (const x of a) if (!b.has(x)) return false;
   return true;
-}
-
-function handleChoice(choiceIndex) {
-  const p = currentPuzzle();
-  if (p.type !== "mc" && p.type !== "fix" && p.type !== "classify") return;
-
-  const correct = (choiceIndex === p.answerIndex);
-  if (correct) {
-    score += 3;
-    streak += 1;
-    updateStats();
-    setFeedback(`✅ Correct. ${p.explain || ""}`, "good");
-    els.nextBtn.disabled = false;
-  } else {
-    streak = 0;
-    updateStats();
-    setFeedback(`❌ Not quite. ${currentLevel().hint}`, "bad");
-    els.nextBtn.disabled = true;
-  }
 }
 
 function checkSelect(tokens, label) {
@@ -843,7 +836,7 @@ function checkReorder() {
   }
 }
 
-function checkDualSelect(tokens) {
+function checkDualSelect() {
   const p = currentPuzzle();
   const depSet = new Set(p.dependent);
   const indSet = new Set(p.independent);
@@ -856,7 +849,7 @@ function checkDualSelect(tokens) {
       setFeedback("✅ Dependent clause correct. Now select the INDEPENDENT clause.", "good");
       step = 1;
       selected = new Set();
-      scrambleOrder = []; // rescramble display for step 2
+      scrambleOrder = [];
       els.nextBtn.disabled = true;
       renderControls();
       renderSentenceBank();
@@ -868,7 +861,6 @@ function checkDualSelect(tokens) {
     return;
   }
 
-  // step 1: independent
   if (equalsSet(selected, indSet)) {
     score += 3;
     streak += 1;
@@ -896,7 +888,7 @@ function checkXray(tokens) {
 
     step += 1;
     selected = new Set();
-    scrambleOrder = []; // rescramble each step
+    scrambleOrder = [];
     els.nextBtn.disabled = true;
 
     if (step >= p.xrayTargets.length) {
@@ -919,8 +911,27 @@ function checkXray(tokens) {
 function checkAnswer() {
   const p = currentPuzzle();
 
+  // MC/FIX/CLASSIFY: grade only on Check
   if (p.type === "mc" || p.type === "fix" || p.type === "classify") {
-    setFeedback("Choose an option in Quick Checks.", "bad");
+    if (chosenIndex === null) {
+      setFeedback("Choose an option in Quick Checks, then press Check.", "bad");
+      els.nextBtn.disabled = true;
+      return;
+    }
+
+    const correct = (chosenIndex === p.answerIndex);
+    if (correct) {
+      score += 3;
+      streak += 1;
+      updateStats();
+      setFeedback(`✅ Correct. ${p.explain || ""}`, "good");
+      els.nextBtn.disabled = false;
+    } else {
+      streak = 0;
+      updateStats();
+      setFeedback(`❌ Not quite. ${currentLevel().hint}`, "bad");
+      els.nextBtn.disabled = true;
+    }
     return;
   }
 
@@ -937,7 +948,7 @@ function checkAnswer() {
   }
 
   if (p.type === "dual-select") {
-    checkDualSelect(tokens);
+    checkDualSelect();
     return;
   }
 
@@ -968,7 +979,6 @@ function next() {
     return;
   }
 
-  // Completed all levels
   setFeedback("🏁 You finished Sentence X-Ray Bootcamp. You’re ready for Spanish structure.", "good");
   els.nextBtn.disabled = true;
   els.checkBtn.disabled = true;
@@ -995,10 +1005,8 @@ function makeCompletionSummary() {
     "- Identify adjectives/adverbs and understand Spanish adjective placement.",
     "- Rewrite apostrophe-s possession as 'of' (Spanish uses 'de').",
     "",
-    "Spanish Bridge:",
-    "Spanish often compresses meaning into verb endings and uses 'de' for possession.",
-    "",
-    `Verification Code: ${code}`
+    "Verification Code:",
+    code
   ].join("\n");
 }
 
@@ -1017,7 +1025,6 @@ function init() {
     els.hint.textContent = currentLevel().hint;
   });
 
-  // Enter to check
   window.addEventListener("keydown", (e) => {
     if (e.key === "Enter") checkAnswer();
   });
