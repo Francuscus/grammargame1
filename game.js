@@ -1,14 +1,15 @@
 /* Sentence Lab — Sentence X-Ray Edition (English → Spanish Bootstrapping)
    FULL GAME.JS (scrambled by default)
-   UPDATED: MC/FIX/CLASSIFY now require selecting an option AND pressing "Check"
-   (prevents the “skip question” feel)
-
-   Drop-in replacement for your existing game.js.
-   Uses your existing index.html + style.css (no HTML changes required).
+   Includes:
+   - FIXED Level 2 puzzle index bug (comma token)
+   - Skip + Log button
+   - Report Error button (copies JSON to clipboard)
+   - MC/FIX/CLASSIFY require selecting an option + pressing Check
 
    Expected HTML IDs:
    levelLabel, conceptLabel, mission, bridge, bank, built, feedback, checks, hint,
-   score, streak, nextBtn, checkBtn, resetBtn, undoBtn, shuffleBtn, hintBtn
+   score, streak, nextBtn, checkBtn, resetBtn, undoBtn, shuffleBtn, hintBtn,
+   skipBtn, reportBtn
 */
 
 // ----------------------------- Levels -----------------------------
@@ -77,7 +78,9 @@ const LEVELS = [
         type: "select",
         prompt: "Select the SUBJECT (not the first word).",
         sentence: "In the library, my friends read quietly.",
-        targets: [{ label: "subject", indices: [3, 4] }],
+        // IMPORTANT FIX: tokenizer splits comma as its own token.
+        // Tokens: In(0) the(1) library(2) ,(3) my(4) friends(5) read(6) quietly(7) .(8)
+        targets: [{ label: "subject", indices: [4, 5] }],
         explain: "my friends = subject. In the library = extra place info.",
       },
       {
@@ -143,7 +146,7 @@ const LEVELS = [
     ],
   },
 
-  // 4) PROPER NOUN → PRONOUN (explicit practice)
+  // 4) PROPER NOUN → PRONOUN
   {
     id: 4,
     concept: "Replace proper nouns with pronouns (without changing meaning)",
@@ -322,8 +325,7 @@ const LEVELS = [
         stem: "Because she was tired",
         options: ["sentence", "phrase"],
         answerIndex: 1,
-        explain:
-          "Dependent clause can’t stand alone → functions as incomplete chunk here.",
+        explain: "Dependent clause can’t stand alone → incomplete chunk here.",
       },
     ],
   },
@@ -345,8 +347,7 @@ const LEVELS = [
         sentence: "Because she was tired, she went home.",
         dependent: [0, 1, 2, 3],
         independent: [5, 6, 7],
-        explain:
-          "Because she was tired = dependent. she went home = independent.",
+        explain: "Because she was tired = dependent. she went home = independent.",
       },
       {
         type: "dual-select",
@@ -354,8 +355,7 @@ const LEVELS = [
         sentence: "Although they studied, they failed the quiz.",
         dependent: [0, 1, 2],
         independent: [4, 5, 6, 7],
-        explain:
-          "Although they studied = dependent. they failed the quiz = independent.",
+        explain: "Although they studied = dependent. they failed the quiz = independent.",
       },
       {
         type: "dual-select",
@@ -363,8 +363,7 @@ const LEVELS = [
         sentence: "When the class ended, the students left quickly.",
         dependent: [0, 1, 2, 3],
         independent: [5, 6, 7, 8],
-        explain:
-          "When the class ended = dependent. the students left quickly = independent.",
+        explain: "When the class ended = dependent. the students left quickly = independent.",
       },
     ],
   },
@@ -385,8 +384,7 @@ const LEVELS = [
         prompt: "Select the ADJECTIVE.",
         sentence: "The red car is fast.",
         targets: [{ label: "adjective", indices: [1] }],
-        explain:
-          "red describes car. Spanish often: el coche rojo (noun + adjective).",
+        explain: "red describes car. Spanish often: el coche rojo (noun + adjective).",
       },
       {
         type: "select",
@@ -397,12 +395,10 @@ const LEVELS = [
       },
       {
         type: "reorder",
-        prompt:
-          "Spanish placement practice: build the phrase in Spanish order (article + noun + adjective).",
+        prompt: "Spanish placement practice: build the phrase in Spanish order (article + noun + adjective).",
         bank: ["rojo", "coche", "el"],
         answers: [["el", "coche", "rojo"]],
-        explain:
-          "Spanish commonly places the adjective after the noun: el coche rojo.",
+        explain: "Spanish commonly places the adjective after the noun: el coche rojo.",
       },
       {
         type: "fix",
@@ -486,12 +482,12 @@ const LEVELS = [
         prompt: "Step through the targets. You must correctly tag each part to finish.",
         sentence: "Although the students were tired, they studied carefully in the library.",
         xrayTargets: [
-          { label: "verb", prompt: "Select the VERB(S).", indices: [3, 7] }, // were, studied
+          { label: "verb", prompt: "Select the VERB(S).", indices: [3, 7] },      // were, studied
           { label: "subject", prompt: "Select the SUBJECT of the dependent clause.", indices: [1, 2] }, // the students
-          { label: "dependent", prompt: "Select the DEPENDENT clause.", indices: [0, 1, 2, 3, 4] }, // Although...
-          { label: "independent", prompt: "Select the INDEPENDENT clause.", indices: [6, 7, 8, 9, 10, 11] }, // they studied...
-          { label: "adjective", prompt: "Select the ADJECTIVE.", indices: [4] }, // tired
-          { label: "adverb", prompt: "Select the ADVERB.", indices: [8] }, // carefully
+          { label: "dependent", prompt: "Select the DEPENDENT clause.", indices: [0, 1, 2, 3, 4] },     // Although ... tired
+          { label: "independent", prompt: "Select the INDEPENDENT clause.", indices: [6, 7, 8, 9, 10, 11] }, // they studied ...
+          { label: "adjective", prompt: "Select the ADJECTIVE.", indices: [4] },  // tired
+          { label: "adverb", prompt: "Select the ADVERB.", indices: [8] },        // carefully
         ],
         explain: "You just did the full grammar scan. This is exactly the skill Spanish rewards.",
       },
@@ -518,6 +514,8 @@ const els = {
   undoBtn: document.getElementById("undoBtn"),
   shuffleBtn: document.getElementById("shuffleBtn"),
   hintBtn: document.getElementById("hintBtn"),
+  skipBtn: document.getElementById("skipBtn"),
+  reportBtn: document.getElementById("reportBtn"),
 };
 
 // ----------------------------- State -----------------------------
@@ -541,6 +539,9 @@ let chosenIndex = null;
 
 // scramble seed for consistent redraw within a puzzle
 let scrambleOrder = [];
+
+// issue log
+let issueLog = [];
 
 // ----------------------------- Helpers -----------------------------
 function currentLevel() { return LEVELS[levelIndex]; }
@@ -621,6 +622,69 @@ function renderHeader() {
   els.hint.textContent = "";
 }
 
+function logIssue(kind, details = {}) {
+  const lvl = currentLevel();
+  const p = currentPuzzle();
+  issueLog.push({
+    kind,
+    time: new Date().toISOString(),
+    levelId: lvl.id,
+    concept: lvl.concept,
+    puzzleIndex,
+    puzzleType: p.type,
+    details,
+  });
+}
+
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    try {
+      window.prompt("Copy this text:", text);
+      return false;
+    } catch {
+      return false;
+    }
+  }
+}
+
+function skipPuzzle() {
+  logIssue("skipped");
+  streak = 0;
+  updateStats();
+  setFeedback("⏭️ Skipped (logged).", "bad");
+  next();
+}
+
+async function reportError() {
+  const p = currentPuzzle();
+  const tokens = p.sentence ? tokenize(p.sentence) : null;
+
+  const payload = {
+    message: "Reported puzzle issue",
+    time: new Date().toISOString(),
+    levelId: currentLevel().id,
+    concept: currentLevel().concept,
+    puzzleIndex,
+    puzzle: p,
+    tokens,
+    selectedIndices: Array.from(selected).sort((a, b) => a - b),
+    selectedWords: tokens ? Array.from(selected).sort((a, b) => a - b).map(i => tokens[i]) : null,
+    chosenIndex,
+    builtOrder: builtOrder.slice(),
+    score,
+    streak,
+  };
+
+  logIssue("reported", payload);
+
+  const ok = await copyToClipboard(JSON.stringify(payload, null, 2));
+  if (ok) setFeedback("📋 Report copied to clipboard. Paste into email/GitHub issue.", "good");
+  else setFeedback("📋 Report shown for copy (clipboard blocked).", "good");
+}
+
 function renderControls() {
   const p = currentPuzzle();
   let html = `<li><strong>${escapeHtml(p.prompt || "")}</strong></li>`;
@@ -628,21 +692,21 @@ function renderControls() {
   if (p.type === "mc") {
     html += `<li class="small">Choose one (then press Check):</li>`;
     html += `<li>${p.options.map((opt, i) =>
-      `<button class="token" data-choice="${i}">${escapeHtml(opt)}</button>`
+      `<button class="token" data-choice="${i}" style="${chosenIndex === i ? "border-color:#6ee7ff;" : ""}">${escapeHtml(opt)}</button>`
     ).join(" ")}</li>`;
   }
 
   if (p.type === "classify") {
     html += `<li class="small">Choose one (then press Check):</li>`;
     html += `<li>${p.options.map((opt, i) =>
-      `<button class="token" data-choice="${i}">${escapeHtml(opt)}</button>`
+      `<button class="token" data-choice="${i}" style="${chosenIndex === i ? "border-color:#6ee7ff;" : ""}">${escapeHtml(opt)}</button>`
     ).join(" ")}</li>`;
   }
 
   if (p.type === "fix") {
     html += `<li class="small">Choose the correct fix (then press Check):</li>`;
     html += `<li>${p.choices.map((opt, i) =>
-      `<button class="token" data-choice="${i}">${escapeHtml(opt)}</button>`
+      `<button class="token" data-choice="${i}" style="${chosenIndex === i ? "border-color:#6ee7ff;" : ""}">${escapeHtml(opt)}</button>`
     ).join(" ")}</li>`;
   }
 
@@ -662,18 +726,13 @@ function renderControls() {
 
   els.checks.innerHTML = html;
 
-  // attach choice handlers (select only; grading happens on Check)
+  // choice selection (grading only on Check)
   els.checks.querySelectorAll("[data-choice]").forEach(btn => {
-    const i = Number(btn.getAttribute("data-choice"));
-
-    // highlight selected option
-    if (chosenIndex === i) btn.style.borderColor = "#6ee7ff";
-
     btn.addEventListener("click", () => {
-      chosenIndex = i;
+      chosenIndex = Number(btn.getAttribute("data-choice"));
       setFeedback("Selected. Now press Check.", null);
-      els.nextBtn.disabled = true; // do not allow advancing early
-      renderControls();            // re-render to update highlights
+      els.nextBtn.disabled = true;
+      renderControls();
     });
   });
 }
@@ -700,21 +759,20 @@ function renderSentenceBank() {
     return;
   }
 
-  // MC: show stem in built; no word bank
+  // MC: show stem, no bank
   if (p.type === "mc") {
     renderBuiltPanel(p.stem);
     return;
   }
-  // FIX/CLASSIFY: show sentence in built; no word bank
+
+  // FIX/CLASSIFY: show sentence, no bank
   if (p.type === "fix" || p.type === "classify") {
     renderBuiltPanel(p.sentence);
     return;
   }
 
   // SELECTION PUZZLES: scrambled token buttons
-  const sentence = (p.sentence || "").trim();
-  const tokens = tokenize(sentence);
-
+  const tokens = tokenize((p.sentence || "").trim());
   if (scrambleOrder.length !== tokens.length) scrambleOrder = shuffledIndices(tokens.length);
 
   scrambleOrder.forEach((idx) => {
@@ -745,7 +803,7 @@ function resetPuzzle() {
   setFeedback("", null);
   els.nextBtn.disabled = true;
 
-  // Scramble reorder bank by default
+  // scramble reorder bank by default
   const p = currentPuzzle();
   if (p.type === "reorder" && Array.isArray(p.bank)) {
     for (let i = p.bank.length - 1; i > 0; i--) {
@@ -1024,6 +1082,9 @@ function init() {
   els.hintBtn.addEventListener("click", () => {
     els.hint.textContent = currentLevel().hint;
   });
+
+  if (els.skipBtn) els.skipBtn.addEventListener("click", skipPuzzle);
+  if (els.reportBtn) els.reportBtn.addEventListener("click", reportError);
 
   window.addEventListener("keydown", (e) => {
     if (e.key === "Enter") checkAnswer();
