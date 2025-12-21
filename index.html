@@ -960,11 +960,6 @@ function celebrate() {
   setTimeout(() => cel.remove(), 1000);
 }
 
-function playSound(type) {
-  // Placeholder for sound effects - you can add actual audio later
-  // For now, we'll use visual feedback only
-}
-
 // ===========================
 // RENDER
 // ===========================
@@ -990,6 +985,8 @@ function renderPuzzle() {
   selectedIds.clear();
   chosenIndex = null;
   builtOrder = [];
+  currentTokens = [];
+  scrambleOrder = [];
   
   hideFeedback();
   els.nextBtn.disabled = true;
@@ -1011,8 +1008,14 @@ function renderPuzzle() {
 function renderSelectWords(puzzle, colorClass) {
   els.sentenceDisplay.textContent = puzzle.sentence;
   
-  currentTokens = tokenize(puzzle.sentence);
-  scrambleOrder = shuffleArray(currentTokens.map(t => t.id));
+  // Only tokenize and scramble once per puzzle
+  if (currentTokens.length === 0) {
+    currentTokens = tokenize(puzzle.sentence);
+    scrambleOrder = shuffleArray(currentTokens.map(t => t.id));
+  }
+  
+  // Clear and rebuild word bank
+  els.wordBank.innerHTML = '';
   
   scrambleOrder.forEach(id => {
     const tok = currentTokens.find(t => t.id === id);
@@ -1026,7 +1029,7 @@ function renderSelectWords(puzzle, colorClass) {
       } else {
         selectedIds.add(tok.id);
       }
-      renderSelectWords(puzzle, colorClass);
+      updateWordButtons();
       updateSelectionDisplay();
     };
     
@@ -1035,6 +1038,20 @@ function renderSelectWords(puzzle, colorClass) {
     }
     
     els.wordBank.appendChild(btn);
+  });
+}
+
+function updateWordButtons() {
+  const buttons = els.wordBank.querySelectorAll('.word-btn');
+  buttons.forEach(btn => {
+    const tokenText = btn.textContent;
+    const token = currentTokens.find(t => t.text === tokenText);
+    
+    if (token && selectedIds.has(token.id)) {
+      btn.classList.add('selected');
+    } else {
+      btn.classList.remove('selected');
+    }
   });
 }
 
@@ -1175,176 +1192,4 @@ function checkChoice() {
     return;
   }
   
-  if (chosenIndex === puzzle.answerIndex) {
-    handleCorrect(puzzle.explain);
-  } else {
-    handleIncorrect("Not quite! " + currentLevel().mission);
-  }
-}
-
-function checkReorder() {
-  const puzzle = currentPuzzle();
-  const builtNorm = builtOrder.map(w => String(w).toLowerCase());
-  const builtStr = builtNorm.join(" ");
-  
-  const correct = (puzzle.answers || []).some(ans => {
-    const ansNorm = ans.map(w => String(w).toLowerCase()).join(" ");
-    return ansNorm === builtStr;
-  });
-  
-  if (correct) {
-    handleCorrect(puzzle.explain);
-  } else {
-    handleIncorrect("Not quite! Reset and try again.");
-  }
-}
-
-function handleCorrect(explanation) {
-  const basePoints = 5;
-  const streakBonus = Math.min(streak, 10);
-  const points = basePoints + streakBonus;
-  
-  score += points;
-  streak += 1;
-  completedPuzzles += 1;
-  
-  updateStats();
-  celebrate();
-  
-  let message = `✅ Correct! +${points} points`;
-  if (streakBonus > 0) {
-    message += ` (${streakBonus} streak bonus!)`;
-  }
-  message += ` ${explanation}`;
-  
-  showFeedback(message, 'correct');
-  els.nextBtn.disabled = false;
-}
-
-function handleIncorrect(hint) {
-  streak = 0;
-  updateStats();
-  showFeedback(`❌ ${hint}`, 'incorrect');
-}
-
-// ===========================
-// CONTROLS
-// ===========================
-
-function reset() {
-  renderPuzzle();
-}
-
-function showHint() {
-  const hint = currentLevel().bridge;
-  showFeedback(`💡 Hint: ${hint}`, 'neutral');
-}
-
-function skip() {
-  showFeedback('⏭️ Skipped (in case of a bug). No points awarded.', 'neutral');
-  streak = 0;
-  completedPuzzles += 1;
-  updateStats();
-  setTimeout(next, 1500);
-}
-
-function next() {
-  const level = currentLevel();
-  
-  if (puzzleIndex < level.puzzles.length - 1) {
-    puzzleIndex++;
-    renderPuzzle();
-    hideFeedback();
-  } else if (levelIndex < LEVELS.length - 1) {
-    levelIndex++;
-    puzzleIndex = 0;
-    renderHeader();
-    renderPuzzle();
-    showFeedback(`🎊 Level ${levelIndex} complete! New skill unlocked!`, 'correct');
-  } else {
-    showCompletion();
-  }
-}
-
-function showCompletion() {
-  const finalScore = score;
-  const code = `SD-${LEVELS.length}-${finalScore}-${Math.floor(Math.random() * 9000 + 1000)}`;
-  
-  els.gameContainer.innerHTML = `
-    <div class="completion-screen">
-      <div class="trophy">🏆</div>
-      <h2>Mission Complete!</h2>
-      <p style="font-size: 20px; color: #495057; margin-bottom: 30px;">
-        You've unlocked your Spanish Reading Toolkit!
-      </p>
-      
-      <div class="completion-stats">
-        <p>⭐ Final Score: <strong>${finalScore}</strong></p>
-        <p>🔥 Best Streak: <strong>${Math.max(streak, 0)}</strong></p>
-        <p>📊 Puzzles Completed: <strong>${TOTAL_PUZZLES}/${TOTAL_PUZZLES}</strong></p>
-        <p>🎯 Verification Code: <strong>${code}</strong></p>
-      </div>
-      
-      <div class="skills-unlocked">
-        <h3>🛠️ Skills You've Mastered:</h3>
-        <ul>
-          <li>Find verbs FAST (the heartbeat of every sentence)</li>
-          <li>Identify subjects (who's doing the action)</li>
-          <li>Use tag questions to discover pronouns</li>
-          <li>Match subjects and verbs correctly</li>
-          <li>Align time words with verb tenses</li>
-          <li>Apply Spanish adjective placement (noun + adjective)</li>
-          <li>Rewrite possession without apostrophe-s (using "de")</li>
-        </ul>
-      </div>
-      
-      <p style="margin-top: 30px; font-size: 18px; color: #667eea;">
-        <strong>You're now ready for Spanish 101! 🎉</strong>
-      </p>
-      
-      <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 20px;">
-        Play Again
-      </button>
-    </div>
-  `;
-}
-
-function closeTutorial() {
-  els.tutorialOverlay.style.display = 'none';
-}
-
-// ===========================
-// EVENT LISTENERS
-// ===========================
-
-els.checkBtn.onclick = checkAnswer;
-els.nextBtn.onclick = next;
-els.resetBtn.onclick = reset;
-els.hintBtn.onclick = showHint;
-els.skipBtn.onclick = skip;
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    if (!els.nextBtn.disabled) {
-      next();
-    } else {
-      checkAnswer();
-    }
-  }
-});
-
-// ===========================
-// INIT
-// ===========================
-
-function init() {
-  renderHeader();
-  renderPuzzle();
-  updateStats();
-}
-
-init();
-</script>
-
-</body>
-</html>
+  if (chosenIndex === puzzl
