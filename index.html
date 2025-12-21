@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sentence Detective: Spanish Prep Edition</title>
+<title>Spanish Reading Toolkit</title>
 <style>
 * {
   margin: 0;
@@ -554,7 +554,7 @@ body {
     </div>
     <div class="progress-bar-container">
       <div class="progress-bar" id="progressBar" style="width: 0%"></div>
-      <div class="progress-text" id="progressText">0/24</div>
+      <div class="progress-text" id="progressText">0/22</div>
     </div>
     <div class="stat">
       <span>🔥</span>
@@ -584,7 +584,7 @@ body {
 <!-- Tutorial overlay -->
 <div class="tutorial-overlay" id="tutorialOverlay">
   <div class="tutorial-box">
-    <h2>🔍 Welcome, Detective!</h2>
+    <h2>🛠️ Welcome to Your Toolkit!</h2>
     <p><strong>Your Mission:</strong> Train your brain to spot grammar patterns FAST—the superpower you need for reading Spanish.</p>
     <p>📝 <strong>How it works:</strong> Click words in the scrambled Word Bank to select them. Click again to deselect.</p>
     <p>🎯 <strong>Why scrambled?</strong> So you focus on MEANING, not position—just like real reading!</p>
@@ -769,17 +769,17 @@ const LEVELS = [
     puzzles: [
       {
         type: "selectWords",
-        prompt: "Select the ADJECTIVE.",
+        prompt: "Select the ADJECTIVE that describes the car.",
         sentence: "The red car is fast.",
         accept: [["red"]],
-        explain: "'red' describes the car. Spanish: el coche rojo."
+        explain: "'red' describes the car. Spanish: el coche rojo (the car red)."
       },
       {
         type: "reorder",
         prompt: "Build in Spanish order (article + noun + adjective):",
-        bank: ["rojo", "coche", "el"],
-        answers: [["el", "coche", "rojo"]],
-        explain: "Spanish: el coche rojo (noun + adjective)."
+        bank: ["rojo (red)", "coche (car)", "el (the)"],
+        answers: [["el (the)", "coche (car)", "rojo (red)"]],
+        explain: "Spanish: el coche rojo (the red car). Noun comes before adjective!"
       }
     ]
   },
@@ -801,8 +801,8 @@ const LEVELS = [
       {
         type: "reorder",
         prompt: "Build the Spanish phrase:",
-        bank: ["de", "Juan", "libro", "el"],
-        answers: [["el", "libro", "de", "juan"]],
+        bank: ["de (of)", "Juan (John)", "libro (book)", "el (the)"],
+        answers: [["el (the)", "libro (book)", "de (of)", "juan (john)"]],
         explain: "Spanish: el libro de Juan (the book of John)."
       },
       {
@@ -1070,7 +1070,7 @@ function renderMultipleChoice(puzzle) {
     btn.onclick = () => {
       chosenIndex = i;
       renderMultipleChoice(puzzle);
-      showFeedback("Choice selected. Press 'Check Answer' to continue.", 'neutral');
+      updateSelectionDisplay();
     };
     
     els.choices.appendChild(btn);
@@ -1092,7 +1092,7 @@ function renderFix(puzzle) {
     btn.onclick = () => {
       chosenIndex = i;
       renderFix(puzzle);
-      showFeedback("Choice selected. Press 'Check Answer' to continue.", 'neutral');
+      updateSelectionDisplay();
     };
     
     els.choices.appendChild(btn);
@@ -1140,6 +1140,14 @@ function updateSelectionDisplay() {
     } else {
       els.selectionDisplay.className = 'selection-display';
       els.selectionDisplay.textContent = normalizeTokens(builtOrder);
+    }
+  } else if (puzzle.type === 'mc' || puzzle.type === 'fix') {
+    if (chosenIndex === null) {
+      els.selectionDisplay.className = 'selection-display empty';
+      els.selectionDisplay.textContent = 'Choose an option above';
+    } else {
+      els.selectionDisplay.className = 'selection-display';
+      els.selectionDisplay.textContent = `Your choice: ${puzzle.choices ? puzzle.choices[chosenIndex] : puzzle.options[chosenIndex]}`;
     }
   } else {
     els.selectionDisplay.className = 'selection-display empty';
@@ -1285,12 +1293,12 @@ function next() {
 
 function showCompletion() {
   const finalScore = score;
-  const code = `SD-${LEVELS.length}-${finalScore}-${Math.floor(Math.random() * 9000 + 1000)}`;
+  const code = `TK-${LEVELS.length}-${finalScore}-${Math.floor(Math.random() * 9000 + 1000)}`;
   
   els.gameContainer.innerHTML = `
     <div class="completion-screen">
       <div class="trophy">🏆</div>
-      <h2>Mission Complete!</h2>
+      <h2>Toolkit Complete!</h2>
       <p style="font-size: 20px; color: #495057; margin-bottom: 30px;">
         You've unlocked your Spanish Reading Toolkit!
       </p>
