@@ -35,13 +35,13 @@ body {
 }
 .wall-top, .wall-bottom {
   position: absolute; left: 0; right: 0; height: 120px;
-  display: flex; justify-content: space-around; align-items: center; padding: 0 40px;
+  display: flex; justify-content: space-between; align-items: center; padding: 0 40px;
 }
 .wall-top { top: 0; }
 .wall-bottom { bottom: 0; }
 .wall-left, .wall-right {
   position: absolute; top: 120px; bottom: 120px; width: 120px;
-  display: flex; flex-direction: column; justify-content: space-around; align-items: center; padding: 40px 0;
+  display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 40px 0;
 }
 .wall-left { left: 0; }
 .wall-right { right: 0; }
@@ -262,15 +262,15 @@ const REWARDS = [
   {image:'persistencia.jpg', artist:'Salvador Dalí', title:'The Persistence of Memory', blurb:'This iconic surrealist work depicts melting clocks in a barren landscape, symbolizing the fluidity of time. To tell real paintings from AI-generated ones, look for the artist\'s unique brushwork and subtle textures that come from physical paint application, which AI simulations often lack in authenticity.'},
   {image:'goya.jpg', artist:'Francisco Goya', title:'Saturn Devouring His Son', blurb:'A dark and haunting depiction from Goya\'s Black Paintings series, showing the Titan Saturn consuming his child. Real artworks like this have provenance and material analysis that confirm authenticity, whereas AI-generated images may have digital artifacts or inconsistent anatomical details.'},
   {image:'ledesma.jpg', artist:'Clara Ledesma', title:'Untitled', blurb:'An abstract work by the Dominican artist, featuring vibrant colors and forms. To differentiate from AI, note the organic imperfections and personal style evolution in the artist\'s oeuvre, which AI struggles to mimic consistently.'},
-  {image:'el_greco.jpg', artist:'El Greco', title:'Portrait of Cardinal Fernando Niño de Guevara', blurb:'This Mannerist portrait captures the inquisitor with elongated figures and dramatic lighting. Authentic paintings show layers of paint and craquelure from age, unlike smooth, flawless AI outputs.'},
+  {image:'elgreco.jpg', artist:'El Greco', title:'Portrait of Cardinal Fernando Niño de Guevara', blurb:'This Mannerist portrait captures the inquisitor with elongated figures and dramatic lighting. Authentic paintings show layers of paint and craquelure from age, unlike smooth, flawless AI outputs.'},
   {image:'velazquez.jpg', artist:'Diego Velázquez', title:'Las Meninas', blurb:'A complex Baroque composition depicting the Spanish royal family and their attendants. Real vs. AI: Examine the masterful use of light and shadow, and the physical canvas texture visible in high-resolution scans.'},
-  {image:'diego_rivera.jpg', artist:'Diego Rivera', title:'Sueño de una Tarde Dominical en la Alameda Central', blurb:'A mural depicting Mexican history and figures in a dreamlike park setting. To spot AI fakes, check for historical accuracy in details and the artist\'s signature style, as AI may introduce anachronisms or stylistic inconsistencies.'},
+  {image:'diegorivera.jpg', artist:'Diego Rivera', title:'Sueño de una Tarde Dominical en la Alameda Central', blurb:'A mural depicting Mexican history and figures in a dreamlike park setting. To spot AI fakes, check for historical accuracy in details and the artist\'s signature style, as AI may introduce anachronisms or stylistic inconsistencies.'},
   {image:'frida.jpg', artist:'Frida Kahlo', title:'Las Dos Fridas', blurb:'This self-portrait shows two versions of Frida connected by veins, symbolizing her heritage and pain. Real paintings have tangible evidence like X-rays showing underdrawings, which AI cannot replicate.'},
-  {image:'wilfredo_lam.jpg', artist:'Wilfredo Lam', title:'La Jungla', blurb:'A Cubist-inspired work blending Afro-Cuban elements with jungle motifs. Distinguishing from AI: Look for the fusion of cultural influences that reflect the artist\'s life, often mishandled in AI generations due to lack of contextual understanding.'}
+  {image:'wilfredolam.jpg', artist:'Wilfredo Lam', title:'La Jungla', blurb:'A Cubist-inspired work blending Afro-Cuban elements with jungle motifs. Distinguishing from AI: Look for the fusion of cultural influences that reflect the artist\'s life, often mishandled in AI generations due to lack of contextual understanding.'}
 ];
 
 // State
-let levelIndex = 0, puzzleIndex = 0, score = 0, streak = 0, completedPuzzles = 0;
+let levelIndex = 0, puzzleIndex = 0, score = 0, streak = 0, completedPuzzles = 0, startTime, endTime;
 let selectedIds = new Set(), currentTokens = [], scrambleOrder = [], chosenIndex = null, builtOrder = [], unlockedPaintings = [];
 
 // Elements
@@ -566,6 +566,7 @@ function showReward(levelId, reward) {
       renderPuzzle();
       hideFeedback();
     } else {
+      endTime = Date.now();
       showCompletion();
     }
   };
@@ -599,6 +600,9 @@ function renderGalleryWall() {
   });
 }
 function showCompletion() {
+  const totalTime = Math.floor((endTime - startTime) / 60000);
+  const code = `TK-${LEVELS.length}-${score}-${Math.floor(Math.random() * 9000 + 1000)}`;
+
   els.gameContainer.innerHTML = `
     <div class="completion-screen">
       <div class="trophy">🏆</div>
@@ -608,6 +612,8 @@ function showCompletion() {
         <p>⭐ Final Score: <strong>${score}</strong></p>
         <p>🔥 Best Streak: <strong>${Math.max(streak,0)}</strong></p>
         <p>📊 Puzzles Completed: <strong>${TOTAL_PUZZLES}/${TOTAL_PUZZLES}</strong></p>
+        <p>⏱️ Time Taken: <strong>${totalTime} minutes</strong></p>
+        <p>🎯 Verification Code: <strong>${code}</strong></p>
       </div>
       <div class="skills-unlocked">
         <h3>🛠️ Skills Mastered:</h3>
@@ -627,20 +633,27 @@ function showCompletion() {
   `;
 }
 function showGallery() {
+  const totalTime = Math.floor((endTime - startTime) / 60000);
+  const code = `TK-${LEVELS.length}-${score}-${Math.floor(Math.random() * 9000 + 1000)}`;
+  const recap = `Score: ${score}\nTime Taken: ${totalTime} minutes\nVerification Code: ${code}\n\nPost this to VHL site exercise.`;
+
   const overlay = document.createElement('div');
   overlay.className = 'tutorial-overlay';
   overlay.innerHTML = `
-    <div class="reward-box">
+    <div class="tutorial-box gallery-box">
       <h2>Your Art Gallery</h2>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin:20px 0;">
         ${unlockedPaintings.map((r,i) => `
-          <div style="background:white;padding:15px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.1);text-align:center;">
-            <img src="${r.image}" alt="${r.title}" style="max-width:100%;max-height:400px;object-fit:contain;border-radius:10px;margin-bottom:10px;">
+          <div style="background:white;padding:15px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.1);text-align:center;z-index:20;position:relative;">
+            <img src="${r.image}" alt="${r.title}" style="max-width:100%;max-height:400px;object-fit:contain;border-radius:10px;margin-bottom:10px;z-index:21;">
             <p><strong>${r.artist} - ${r.title}</strong></p>
             <p>${r.blurb}</p>
           </div>
         `).join('')}
       </div>
+      <h3>Recap for Professor</h3>
+      <textarea style="width:100%;height:100px;padding:10px;">${recap}</textarea>
+      <p>Copy the above and post to VHL site.</p>
       <button class="btn btn-primary" onclick="this.parentNode.parentNode.remove()">Close</button>
     </div>
   `;
@@ -664,6 +677,7 @@ document.addEventListener('keydown', e => {
 // Init
 function init() {
   unlockedPaintings = [];
+  startTime = Date.now();
   renderHeader();
   renderPuzzle();
   updateStats();
