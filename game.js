@@ -1,1094 +1,1350 @@
-/* Sentence Lab — Sentence X-Ray Edition (English → Spanish Bootstrapping)
-   FULL GAME.JS (scrambled by default)
-   Includes:
-   - FIXED Level 2 puzzle index bug (comma token)
-   - Skip + Log button
-   - Report Error button (copies JSON to clipboard)
-   - MC/FIX/CLASSIFY require selecting an option + pressing Check
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentence Detective: Spanish Prep Edition</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-   Expected HTML IDs:
-   levelLabel, conceptLabel, mission, bridge, bank, built, feedback, checks, hint,
-   score, streak, nextBtn, checkBtn, resetBtn, undoBtn, shuffleBtn, hintBtn,
-   skipBtn, reportBtn
-*/
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
 
-// ----------------------------- Levels -----------------------------
+.game-container {
+  max-width: 900px;
+  width: 100%;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 25px 30px;
+  position: relative;
+}
+
+.level-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.concept-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.mission-text {
+  font-size: 16px;
+  opacity: 0.95;
+  line-height: 1.4;
+}
+
+/* Stats bar */
+.stats-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  background: #f8f9fa;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 24px;
+  color: #667eea;
+}
+
+.streak {
+  color: #ff6b6b;
+}
+
+.streak.active {
+  animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+.progress-bar-container {
+  flex: 1;
+  margin: 0 30px;
+  height: 12px;
+  background: #dee2e6;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.5s ease;
+  border-radius: 10px;
+}
+
+.progress-text {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  color: #495057;
+  line-height: 12px;
+}
+
+/* Main content */
+.content {
+  padding: 30px;
+}
+
+.prompt {
+  background: #e7f3ff;
+  border-left: 4px solid #667eea;
+  padding: 20px;
+  margin-bottom: 25px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.sentence-display {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  font-size: 22px;
+  line-height: 1.6;
+  text-align: center;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #dee2e6;
+}
+
+.word-bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 25px;
+  min-height: 100px;
+  justify-content: center;
+}
+
+.word-btn {
+  padding: 12px 20px;
+  border: 2px solid #dee2e6;
+  background: white;
+  border-radius: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.word-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.word-btn.selected {
+  border-color: #667eea;
+  background: #e7f3ff;
+  transform: scale(1.05);
+}
+
+.word-btn.verb { border-color: #ff6b6b; }
+.word-btn.verb.selected { background: #ffe0e0; border-color: #ff6b6b; }
+
+.word-btn.subject { border-color: #4ecdc4; }
+.word-btn.subject.selected { background: #d4f4f1; border-color: #4ecdc4; }
+
+.word-btn.adjective { border-color: #ffa500; }
+.word-btn.adjective.selected { background: #fff5e0; border-color: #ffa500; }
+
+.word-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Selection display */
+.selection-display {
+  background: white;
+  border: 2px solid #667eea;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 25px;
+  min-height: 80px;
+  font-size: 20px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #495057;
+}
+
+.selection-display.empty {
+  color: #adb5bd;
+  font-style: italic;
+}
+
+/* Choices (MC/Fix) */
+.choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.choice-btn {
+  padding: 18px;
+  background: white;
+  border: 2px solid #dee2e6;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  text-align: center;
+}
+
+.choice-btn:hover {
+  border-color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.choice-btn.selected {
+  border-color: #667eea;
+  background: #e7f3ff;
+  transform: scale(1.02);
+}
+
+/* Feedback */
+.feedback {
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 25px;
+  font-size: 16px;
+  line-height: 1.5;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+}
+
+.feedback.correct {
+  background: #d4edda;
+  border: 2px solid #28a745;
+  color: #155724;
+}
+
+.feedback.incorrect {
+  background: #f8d7da;
+  border: 2px solid #dc3545;
+  color: #721c24;
+}
+
+.feedback.neutral {
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  color: #856404;
+}
+
+.feedback.hidden {
+  display: none;
+}
+
+.feedback-icon {
+  font-size: 24px;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-success {
+  background: #28a745;
+  color: white;
+}
+
+.btn-warning {
+  background: #ffc107;
+  color: #333;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+/* Tutorial overlay */
+.tutorial-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.tutorial-box {
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  max-width: 600px;
+  text-align: center;
+}
+
+.tutorial-box h2 {
+  color: #667eea;
+  margin-bottom: 20px;
+  font-size: 32px;
+}
+
+.tutorial-box p {
+  margin-bottom: 15px;
+  line-height: 1.6;
+  font-size: 16px;
+  color: #495057;
+}
+
+.tutorial-box .btn {
+  margin-top: 20px;
+}
+
+/* Completion screen */
+.completion-screen {
+  text-align: center;
+  padding: 40px;
+}
+
+.completion-screen h2 {
+  font-size: 48px;
+  color: #667eea;
+  margin-bottom: 20px;
+}
+
+.completion-screen .trophy {
+  font-size: 80px;
+  margin-bottom: 20px;
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+.completion-stats {
+  background: #f8f9fa;
+  padding: 30px;
+  border-radius: 12px;
+  margin: 30px 0;
+  display: inline-block;
+  text-align: left;
+}
+
+.completion-stats p {
+  margin: 10px 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.skills-unlocked {
+  background: #e7f3ff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.skills-unlocked h3 {
+  color: #667eea;
+  margin-bottom: 15px;
+}
+
+.skills-unlocked ul {
+  list-style: none;
+  text-align: left;
+}
+
+.skills-unlocked li {
+  padding: 8px 0;
+  font-size: 16px;
+}
+
+.skills-unlocked li::before {
+  content: "✓ ";
+  color: #28a745;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.word-btn {
+  animation: slideIn 0.3s ease-out;
+}
+
+.celebration {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 100px;
+  z-index: 999;
+  pointer-events: none;
+  animation: celebrate 1s ease-out;
+}
+
+@keyframes celebrate {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1) translateY(-100px);
+  }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .stats-bar {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .progress-bar-container {
+    margin: 0;
+    width: 100%;
+  }
+  
+  .concept-title {
+    font-size: 22px;
+  }
+  
+  .word-btn {
+    font-size: 16px;
+    padding: 10px 16px;
+  }
+}
+
+/* Bridge info */
+.bridge {
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: 15px 20px;
+  margin-bottom: 25px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #856404;
+}
+
+.bridge strong {
+  color: #533f03;
+}
+</style>
+</head>
+<body>
+
+<div class="game-container" id="gameContainer">
+  <!-- Header -->
+  <div class="header">
+    <div class="level-badge" id="levelBadge">Level 1</div>
+    <div class="concept-title" id="conceptTitle">Find the VERB</div>
+    <div class="mission-text" id="missionText">Click the verb to find the heartbeat of the sentence.</div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat">
+      <span>⭐</span>
+      <span class="stat-value" id="scoreValue">0</span>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+      <div class="progress-text" id="progressText">0/24</div>
+    </div>
+    <div class="stat">
+      <span>🔥</span>
+      <span class="stat-value streak" id="streakValue">0</span>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content" id="content">
+    <div class="bridge" id="bridge"></div>
+    <div class="prompt" id="prompt"></div>
+    <div class="sentence-display" id="sentenceDisplay"></div>
+    <div class="word-bank" id="wordBank"></div>
+    <div class="selection-display empty" id="selectionDisplay">Click words to select them</div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback hidden" id="feedback"></div>
+    <div class="controls">
+      <button class="btn btn-primary" id="checkBtn">Check Answer</button>
+      <button class="btn btn-success" id="nextBtn" disabled>Next →</button>
+      <button class="btn btn-secondary" id="resetBtn">Reset</button>
+      <button class="btn btn-warning" id="hintBtn">💡 Hint</button>
+      <button class="btn btn-danger" id="skipBtn">Skip (Bug?)</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tutorial overlay -->
+<div class="tutorial-overlay" id="tutorialOverlay">
+  <div class="tutorial-box">
+    <h2>🔍 Welcome, Detective!</h2>
+    <p><strong>Your Mission:</strong> Train your brain to spot grammar patterns FAST—the superpower you need for reading Spanish.</p>
+    <p>📝 <strong>How it works:</strong> Click words in the scrambled Word Bank to select them. Click again to deselect.</p>
+    <p>🎯 <strong>Why scrambled?</strong> So you focus on MEANING, not position—just like real reading!</p>
+    <p>🔥 <strong>Build streaks</strong> for bonus points. Get 3+ correct in a row to activate multipliers!</p>
+    <p>Ready to unlock your Spanish reading toolkit?</p>
+    <button class="btn btn-primary" onclick="closeTutorial()">Let's Go! 🚀</button>
+  </div>
+</div>
+
+<script>
+// ===========================
+// GAME DATA
+// ===========================
+
 const LEVELS = [
-  // 1) VERB FIRST
   {
     id: 1,
-    concept: "Find the VERB (always first)",
-    mission:
-      "Click the verb (action or linking). If you can’t find the verb, you can’t read the sentence.",
-    bridge:
-      "Spanish packs WHO + TIME into the verb. If you train your eyes to find verbs first, Spanish stops feeling random.",
-    hint:
-      "Verb = what happens (studies, closes) or what connects description (is/are/was).",
+    concept: "🔍 Find the VERB (the heartbeat)",
+    mission: "Click the verb. Every sentence needs one!",
+    bridge: "Spanish verbs pack WHO + WHEN into one word. Find the verb = unlock the sentence.",
+    colorClass: "verb",
     puzzles: [
       {
-        type: "select",
+        type: "selectWords",
         prompt: "Select the VERB.",
         sentence: "She studies Spanish at night.",
-        targets: [{ label: "verb", indices: [1] }],
-        explain: "studies is the action (the heartbeat).",
+        accept: [["studies"]],
+        explain: "'studies' is the action—the heartbeat of the sentence."
       },
       {
-        type: "select",
+        type: "selectWords",
         prompt: "Select the VERB.",
-        sentence: "The store closes at eight on weekdays.",
-        targets: [{ label: "verb", indices: [2] }],
-        explain: "closes is the action. Everything else is extra info.",
+        sentence: "The store closes at eight.",
+        accept: [["closes"]],
+        explain: "'closes' is what the store does."
       },
       {
-        type: "select",
+        type: "selectWords",
         prompt: "Select the VERB (linking verb).",
         sentence: "They are ready for the exam.",
-        targets: [{ label: "verb", indices: [1] }],
-        explain: "are links the subject to a description (ready).",
-      },
-      {
-        type: "select",
-        prompt: "Select the VERB IDEA (helping + main verb).",
-        sentence: "We will practice tomorrow.",
-        targets: [{ label: "verb", indices: [1, 2] }],
-        explain: "will practice functions as one verb idea (future).",
-      },
-    ],
+        accept: [["are"]],
+        explain: "'are' links the subject to a description."
+      }
+    ]
   },
-
-  // 2) SUBJECT
   {
     id: 2,
-    concept: "Find the SUBJECT (who is doing it?)",
-    mission:
-      "Click the subject (the person/thing doing the verb). Sometimes it’s more than one word.",
-    bridge:
-      "Spanish often drops the subject word, but the subject still exists logically. You’re building that logic now.",
-    hint:
-      "Ask: who/what is doing the verb? Ignore time/place phrases at the beginning.",
+    concept: "👤 Find the SUBJECT (who's doing it?)",
+    mission: "Click the subject—the person or thing doing the verb.",
+    bridge: "Spanish often drops the subject word, but it still exists. You're training that logic now.",
+    colorClass: "subject",
     puzzles: [
       {
-        type: "select",
-        prompt: "Select the SUBJECT (full subject phrase).",
+        type: "selectWords",
+        prompt: "Select the SUBJECT.",
         sentence: "The happy student studies Spanish.",
-        targets: [{ label: "subject", indices: [0, 1, 2] }],
-        explain: "The happy student = full subject phrase (core noun: student).",
+        accept: [["student"], ["the", "happy", "student"]],
+        explain: "Core subject = 'student'. Full phrase = 'the happy student'."
       },
       {
-        type: "select",
-        prompt: "Select the SUBJECT (not the first word).",
+        type: "selectWords",
+        prompt: "Select the SUBJECT (don't get fooled!).",
         sentence: "In the library, my friends read quietly.",
-        // IMPORTANT FIX: tokenizer splits comma as its own token.
-        // Tokens: In(0) the(1) library(2) ,(3) my(4) friends(5) read(6) quietly(7) .(8)
-        targets: [{ label: "subject", indices: [4, 5] }],
-        explain: "my friends = subject. In the library = extra place info.",
+        accept: [["friends"], ["my", "friends"]],
+        explain: "Subject = 'my friends'. 'In the library' is just location info."
       },
       {
-        type: "select",
-        prompt: "Select the SUBJECT (compound subject).",
+        type: "selectWords",
+        prompt: "Select the SUBJECT.",
         sentence: "Maria and Luis practice every day.",
-        targets: [{ label: "subject", indices: [0, 1, 2] }],
-        explain: "Maria and Luis = two subjects sharing one verb.",
-      },
-      {
-        type: "select",
-        prompt: "Select the SUBJECT (it comes after a time word).",
-        sentence: "Yesterday, the team won the game.",
-        targets: [{ label: "subject", indices: [1, 2] }],
-        explain: "the team = subject. Yesterday = time marker.",
-      },
-    ],
+        accept: [["maria", "and", "luis"], ["maria"], ["luis"]],
+        explain: "'Maria and Luis' is a compound subject."
+      }
+    ]
   },
-
-  // 3) TAG QUESTIONS → PRONOUN DISCOVERY
   {
     id: 3,
-    concept: "Tag Questions → Discover pronouns",
-    mission:
-      "Choose the correct tag ending. Tags force you to ‘point’ at the subject with a pronoun.",
-    bridge:
-      "This trains subject–verb pairing. In Spanish, the verb ending often does the pointing instead of a pronoun.",
-    hint:
-      "Match: (1) pronoun to the subject (Natalie→she), and (2) auxiliary/tense (is→isn't, walked→didn't).",
+    concept: "🏷️ Tag Questions → Pronouns",
+    mission: "Choose the correct tag ending. This reveals the pronoun!",
+    bridge: "Tag questions force you to identify the subject. Spanish verb endings do the same job.",
+    colorClass: "",
     puzzles: [
       {
         type: "mc",
-        prompt: "Choose the best tag ending.",
+        prompt: "Choose the best tag ending:",
         stem: "Natalie is a student, _____?",
-        options: ["isn't she", "aren't they", "doesn't she", "isn't it"],
+        options: ["isn't she", "aren't they", "doesn't she"],
         answerIndex: 0,
-        explain: "Natalie → she. is → isn't she.",
+        explain: "Natalie → she. 'is' → isn't she."
       },
       {
         type: "mc",
-        prompt: "Choose the best tag ending.",
+        prompt: "Choose the best tag ending:",
         stem: "The store closes at eight, _____?",
-        options: ["doesn't it", "isn't it", "don't it", "didn't it"],
+        options: ["doesn't it", "isn't it", "don't they"],
         answerIndex: 0,
-        explain: "The store → it. Present simple uses do/does → doesn't it.",
-      },
-      {
-        type: "mc",
-        prompt: "Choose the best tag ending.",
-        stem: "Matthew walked to the gym, _____?",
-        options: ["didn't he", "doesn't he", "wasn't he", "isn't he"],
-        answerIndex: 0,
-        explain: "Past simple uses did → didn't he. Matthew → he.",
-      },
-      {
-        type: "mc",
-        prompt: "Choose the best tag ending.",
-        stem: "Those students are ready, _____?",
-        options: ["aren't they", "isn't it", "don't they", "aren't we"],
-        answerIndex: 0,
-        explain: "Those students → they. are → aren't they.",
-      },
-    ],
+        explain: "The store → it. Present simple → doesn't it."
+      }
+    ]
   },
-
-  // 4) PROPER NOUN → PRONOUN
   {
     id: 4,
-    concept: "Replace proper nouns with pronouns (without changing meaning)",
-    mission:
-      "Pick the best pronoun replacement for the subject. This is how you keep sentences from getting repetitive.",
-    bridge:
-      "Spanish can drop pronouns, but you still need to know what pronoun the verb points to (yo/tú/él/ella/nosotros/ellos).",
-    hint:
-      "Ask: is the subject a man, a woman, a thing, or a group? Use he/she/it/they/we/I.",
+    concept: "🔄 Replace with Pronouns",
+    mission: "Swap proper nouns for pronouns (he, she, it, they, we).",
+    bridge: "Spanish can drop pronouns entirely—but you need to know which one the verb implies.",
+    colorClass: "",
     puzzles: [
       {
         type: "mc",
-        prompt: "Replace the subject with the best pronoun.",
+        prompt: "Replace the subject:",
         stem: "John studies Spanish. → _____ studies Spanish.",
-        options: ["He", "She", "They", "It"],
-        answerIndex: 0,
-        explain: "John → He.",
-      },
-      {
-        type: "mc",
-        prompt: "Replace the subject with the best pronoun.",
-        stem: "Monmouth University is big. → _____ is big.",
         options: ["He", "She", "It", "They"],
-        answerIndex: 2,
-        explain: "A university is a thing → It.",
-      },
-      {
-        type: "mc",
-        prompt: "Replace the subject with the best pronoun.",
-        stem: "Maria and Luis practice. → _____ practice.",
-        options: ["They", "We", "She", "It"],
         answerIndex: 0,
-        explain: "Two people → They.",
+        explain: "John → He."
       },
       {
         type: "mc",
-        prompt: "Replace the subject with the best pronoun.",
-        stem: "My friends and I are ready. → _____ are ready.",
-        options: ["They", "We", "I", "You"],
-        answerIndex: 1,
-        explain: "My friends and I → We.",
-      },
-    ],
+        prompt: "Replace the subject:",
+        stem: "Maria and Luis practice. → _____ practice.",
+        options: ["They", "We", "She", "He"],
+        answerIndex: 0,
+        explain: "Two people → They."
+      }
+    ]
   },
-
-  // 5) AGREEMENT
   {
     id: 5,
-    concept: "Subject–Verb Agreement (English → Spanish)",
-    mission:
-      "Spot agreement errors and fix them. If agreement matters in English, it matters more in Spanish.",
-    bridge:
-      "Spanish agreement is stronger: verbs change clearly with the subject. This prepares you for Spanish verb endings.",
-    hint:
-      "Present: he/she/it usually adds -s (walks). Plural usually does not (walk).",
+    concept: "⚖️ Subject-Verb Agreement",
+    mission: "Fix the agreement error. The subject and verb must match!",
+    bridge: "Spanish agreement is even stricter. Master this now, dominate Spanish later.",
+    colorClass: "",
     puzzles: [
       {
         type: "fix",
-        prompt: "Fix the agreement error.",
+        prompt: "Fix the agreement error:",
         sentence: "The students studies Spanish.",
         choices: ["study", "studies"],
         answerIndex: 0,
-        explain: "students = plural → study (no -s).",
+        explain: "'students' is plural → 'study' (no -s)."
       },
       {
         type: "fix",
-        prompt: "Fix the agreement error.",
+        prompt: "Fix the agreement error:",
         sentence: "He walk to class every day.",
         choices: ["walk", "walks"],
         answerIndex: 1,
-        explain: "he = 3rd singular → walks.",
-      },
-      {
-        type: "fix",
-        prompt: "Fix the agreement error.",
-        sentence: "My friend and I is late.",
-        choices: ["are", "am"],
-        answerIndex: 0,
-        explain: "My friend and I = we → are.",
-      },
-      {
-        type: "fix",
-        prompt: "Fix the agreement error (meaning matters).",
-        sentence: "Each student have a book.",
-        choices: ["has", "have"],
-        answerIndex: 0,
-        explain: "Each student = singular meaning → has.",
-      },
-    ],
+        explain: "'he' is singular → 'walks' (add -s)."
+      }
+    ]
   },
-
-  // 6) TENSE + CERTAINTY
   {
     id: 6,
-    concept: "Verb Time & Reality (tense + certainty)",
-    mission:
-      "Fix tense mismatches and classify certainty (certain vs uncertain).",
-    bridge:
-      "Spanish encodes time inside the verb, and later you’ll see mood (certainty/doubt). You’re training the idea now.",
-    hint:
-      "Yesterday/tomorrow must match the verb. might/may = uncertain. will/definitely = more certain.",
+    concept: "⏰ Verb Tense Matching",
+    mission: "Fix tense mismatches. Time words must match the verb!",
+    bridge: "Spanish encodes time INSIDE the verb ending. This trains your timing instincts.",
+    colorClass: "",
     puzzles: [
       {
         type: "fix",
-        prompt: "Fix the tense mismatch.",
+        prompt: "Fix the tense mismatch:",
         sentence: "Yesterday, she walks to class.",
         choices: ["walked", "walks"],
         answerIndex: 0,
-        explain: "Yesterday = past → walked.",
+        explain: "'Yesterday' = past → 'walked'."
       },
       {
         type: "fix",
-        prompt: "Fix the tense mismatch.",
-        sentence: "Tomorrow, we practiced in the library.",
+        prompt: "Fix the tense mismatch:",
+        sentence: "Tomorrow, we practiced.",
         choices: ["will practice", "practiced"],
         answerIndex: 0,
-        explain: "Tomorrow = future → will practice.",
-      },
-      {
-        type: "classify",
-        prompt: "Is this certain or uncertain?",
-        sentence: "He might come later.",
-        options: ["certain", "uncertain"],
-        answerIndex: 1,
-        explain: "might signals uncertainty.",
-      },
-      {
-        type: "classify",
-        prompt: "Is this certain or uncertain?",
-        sentence: "She will definitely pass.",
-        options: ["certain", "uncertain"],
-        answerIndex: 0,
-        explain: "will + definitely = strong certainty.",
-      },
-    ],
+        explain: "'Tomorrow' = future → 'will practice'."
+      }
+    ]
   },
-
-  // 7) SENTENCE vs PHRASE
   {
     id: 7,
-    concept: "Sentence vs Phrase (does it breathe?)",
-    mission:
-      "Decide whether a chunk is a sentence or a phrase. A sentence needs a subject+verb pair (except commands).",
-    bridge:
-      "Spanish often implies the subject. Still: the verb is the heartbeat. If you can detect the heartbeat, you can read.",
-    hint:
-      "Phrase = incomplete idea. Sentence = complete thought (subject+verb). Commands count as sentences.",
+    concept: "🎨 Adjectives + Spanish Order",
+    mission: "Find adjectives, then practice Spanish word order (noun + adjective).",
+    bridge: "Spanish flips it: 'red car' becomes 'coche rojo' (car red). Get used to it now!",
+    colorClass: "adjective",
     puzzles: [
       {
-        type: "mc",
-        prompt: "Sentence or phrase?",
-        stem: "Running fast",
-        options: ["sentence", "phrase"],
-        answerIndex: 1,
-        explain: "No clear subject + finite verb → phrase.",
-      },
-      {
-        type: "mc",
-        prompt: "Sentence or phrase?",
-        stem: "She is running fast.",
-        options: ["sentence", "phrase"],
-        answerIndex: 0,
-        explain: "Subject (she) + verb (is running) → sentence.",
-      },
-      {
-        type: "mc",
-        prompt: "Sentence or phrase? (command rule)",
-        stem: "Sit down.",
-        options: ["sentence", "phrase"],
-        answerIndex: 0,
-        explain: "Command = sentence with implied subject (you).",
-      },
-      {
-        type: "mc",
-        prompt: "Sentence or phrase?",
-        stem: "Because she was tired",
-        options: ["sentence", "phrase"],
-        answerIndex: 1,
-        explain: "Dependent clause can’t stand alone → incomplete chunk here.",
-      },
-    ],
-  },
-
-  // 8) CLAUSES
-  {
-    id: 8,
-    concept: "Independent vs Dependent Clauses",
-    mission:
-      "Select the dependent clause (can’t stand alone), then the independent clause (can stand alone).",
-    bridge:
-      "Spanish readings chain clauses. If you can spot the independent clause, long Spanish sentences stop being scary.",
-    hint:
-      "Dependent often starts with because/although/when/if. Independent clause can stand alone as a sentence.",
-    puzzles: [
-      {
-        type: "dual-select",
-        prompt: "Select DEPENDENT clause, then INDEPENDENT clause.",
-        sentence: "Because she was tired, she went home.",
-        dependent: [0, 1, 2, 3],
-        independent: [5, 6, 7],
-        explain: "Because she was tired = dependent. she went home = independent.",
-      },
-      {
-        type: "dual-select",
-        prompt: "Select DEPENDENT clause, then INDEPENDENT clause.",
-        sentence: "Although they studied, they failed the quiz.",
-        dependent: [0, 1, 2],
-        independent: [4, 5, 6, 7],
-        explain: "Although they studied = dependent. they failed the quiz = independent.",
-      },
-      {
-        type: "dual-select",
-        prompt: "Select DEPENDENT clause, then INDEPENDENT clause.",
-        sentence: "When the class ended, the students left quickly.",
-        dependent: [0, 1, 2, 3],
-        independent: [5, 6, 7, 8],
-        explain: "When the class ended = dependent. the students left quickly = independent.",
-      },
-    ],
-  },
-
-  // 9) ADJECTIVES + SPANISH PLACEMENT + ADVERBS
-  {
-    id: 9,
-    concept: "Adjectives & Adverbs + Spanish adjective placement",
-    mission:
-      "Identify adjectives/adverbs, then practice Spanish-style adjective placement (noun + adjective).",
-    bridge:
-      "Common Spanish pattern: noun + adjective (coche rojo). You’ll practice that movement explicitly.",
-    hint:
-      "Adjective describes a noun. Adverb describes a verb (often ends -ly in English).",
-    puzzles: [
-      {
-        type: "select",
+        type: "selectWords",
         prompt: "Select the ADJECTIVE.",
         sentence: "The red car is fast.",
-        targets: [{ label: "adjective", indices: [1] }],
-        explain: "red describes car. Spanish often: el coche rojo (noun + adjective).",
-      },
-      {
-        type: "select",
-        prompt: "Select the ADVERB.",
-        sentence: "She speaks clearly in class.",
-        targets: [{ label: "adverb", indices: [2] }],
-        explain: "clearly describes speaks (how she speaks).",
+        accept: [["red"]],
+        explain: "'red' describes the car. Spanish: el coche rojo."
       },
       {
         type: "reorder",
-        prompt: "Spanish placement practice: build the phrase in Spanish order (article + noun + adjective).",
+        prompt: "Build in Spanish order (article + noun + adjective):",
         bank: ["rojo", "coche", "el"],
         answers: [["el", "coche", "rojo"]],
-        explain: "Spanish commonly places the adjective after the noun: el coche rojo.",
-      },
-      {
-        type: "fix",
-        prompt: "Fix the modifier form (good vs well).",
-        sentence: "She speaks good.",
-        choices: ["well", "good"],
-        answerIndex: 0,
-        explain: "speaks needs an adverb: well. Spanish parallels: bien vs bueno.",
-      },
-    ],
+        explain: "Spanish: el coche rojo (noun + adjective)."
+      }
+    ]
   },
-
-  // 10) POSSESSION — NO APOSTROPHE-S IN SPANISH
   {
-    id: 10,
-    concept: "Possession: Spanish has no apostrophe-s",
-    mission:
-      "Practice rewriting English apostrophe-s as 'of' (and preview Spanish 'de').",
-    bridge:
-      "Spanish does NOT use apostrophe-s. Instead it uses 'de': el libro de Juan = John’s book.",
-    hint:
-      "English: John's book → the book of John. Spanish: el libro de Juan.",
+    id: 8,
+    concept: "🚫 Possession: NO Apostrophe-S!",
+    mission: "Rewrite using 'of' instead of apostrophe-s. Spanish does the same!",
+    bridge: "Spanish uses 'de' (of), never apostrophe-s. John's book = el libro DE Juan.",
+    colorClass: "",
     puzzles: [
       {
         type: "mc",
-        prompt: "Rewrite in English without apostrophe-s (choose the best).",
+        prompt: "Rewrite without apostrophe-s:",
         stem: "John's book →",
-        options: ["the book of John", "the John's book", "the book John's"],
+        options: ["the book of John", "the John's book", "Johns book"],
         answerIndex: 0,
-        explain: "Correct: the book of John. This mirrors Spanish structure.",
-      },
-      {
-        type: "mc",
-        prompt: "Rewrite in English without apostrophe-s (choose the best).",
-        stem: "Monmouth University's campus →",
-        options: [
-          "the campus of Monmouth University",
-          "Monmouth University campus of",
-          "the campus Monmouth University's",
-        ],
-        answerIndex: 0,
-        explain: "Correct: the campus of Monmouth University.",
+        explain: "'the book of John' matches Spanish logic."
       },
       {
         type: "reorder",
-        prompt: "Build the English 'of' phrase (no apostrophe-s):",
-        bank: ["book", "of", "John", "the"],
-        answers: [["the", "book", "of", "John"]],
-        explain: "English paraphrase that matches Spanish logic: the book of John.",
-      },
-      {
-        type: "reorder",
-        prompt: "Spanish preview (structure only): build the Spanish-style phrase:",
+        prompt: "Build the Spanish phrase:",
         bank: ["de", "Juan", "libro", "el"],
-        answers: [["el", "libro", "de", "Juan"]],
-        explain: "Spanish possession uses de: el libro de Juan.",
+        answers: [["el", "libro", "de", "juan"]],
+        explain: "Spanish: el libro de Juan (the book of John)."
       },
       {
         type: "mc",
-        prompt: "Choose the best Spanish-logic paraphrase (English).",
+        prompt: "Rewrite without apostrophe-s:",
         stem: "Lisa's car →",
-        options: ["the car of Lisa", "Lisa car", "the Lisa's car"],
+        options: ["the car of Lisa", "Lisas car", "the Lisa car"],
         answerIndex: 0,
-        explain: "the car of Lisa (English paraphrase). Spanish: el coche de Lisa.",
-      },
-    ],
-  },
-
-  // 11) FINAL X-RAY
-  {
-    id: 11,
-    concept: "Final X-Ray (full diagnosis)",
-    mission:
-      "Full scan: verbs, subjects, dependent clause, independent clause, adjective, adverb.",
-    bridge:
-      "If you can do this in English, Spanish structure becomes a puzzle you can actually solve.",
-    hint: "Go in order: VERB → SUBJECT → CLAUSES → MODIFIERS.",
-    puzzles: [
-      {
-        type: "xray",
-        prompt: "Step through the targets. You must correctly tag each part to finish.",
-        sentence: "Although the students were tired, they studied carefully in the library.",
-        xrayTargets: [
-          { label: "verb", prompt: "Select the VERB(S).", indices: [3, 7] },      // were, studied
-          { label: "subject", prompt: "Select the SUBJECT of the dependent clause.", indices: [1, 2] }, // the students
-          { label: "dependent", prompt: "Select the DEPENDENT clause.", indices: [0, 1, 2, 3, 4] },     // Although ... tired
-          { label: "independent", prompt: "Select the INDEPENDENT clause.", indices: [6, 7, 8, 9, 10, 11] }, // they studied ...
-          { label: "adjective", prompt: "Select the ADJECTIVE.", indices: [4] },  // tired
-          { label: "adverb", prompt: "Select the ADVERB.", indices: [8] },        // carefully
-        ],
-        explain: "You just did the full grammar scan. This is exactly the skill Spanish rewards.",
-      },
-    ],
-  },
+        explain: "'the car of Lisa' → Spanish: el coche de Lisa."
+      }
+    ]
+  }
 ];
 
-// ----------------------------- DOM -----------------------------
-const els = {
-  levelLabel: document.getElementById("levelLabel"),
-  conceptLabel: document.getElementById("conceptLabel"),
-  mission: document.getElementById("mission"),
-  bridge: document.getElementById("bridge"),
-  bank: document.getElementById("bank"),
-  built: document.getElementById("built"),
-  feedback: document.getElementById("feedback"),
-  checks: document.getElementById("checks"),
-  hint: document.getElementById("hint"),
-  score: document.getElementById("score"),
-  streak: document.getElementById("streak"),
-  nextBtn: document.getElementById("nextBtn"),
-  checkBtn: document.getElementById("checkBtn"),
-  resetBtn: document.getElementById("resetBtn"),
-  undoBtn: document.getElementById("undoBtn"),
-  shuffleBtn: document.getElementById("shuffleBtn"),
-  hintBtn: document.getElementById("hintBtn"),
-  skipBtn: document.getElementById("skipBtn"),
-  reportBtn: document.getElementById("reportBtn"),
-};
+// Calculate total puzzles
+const TOTAL_PUZZLES = LEVELS.reduce((sum, level) => sum + level.puzzles.length, 0);
 
-// ----------------------------- State -----------------------------
+// ===========================
+// STATE
+// ===========================
+
 let levelIndex = 0;
 let puzzleIndex = 0;
-
 let score = 0;
 let streak = 0;
+let completedPuzzles = 0;
 
-// selection state
-let selected = new Set();
-
-// reorder state
+let selectedIds = new Set();
+let currentTokens = [];
+let scrambleOrder = [];
+let chosenIndex = null;
 let builtOrder = [];
 
-// multi-step state used by dual-select and xray
-let step = 0;
+// ===========================
+// ELEMENTS
+// ===========================
 
-// for mc/fix/classify: user must select a choice, then press Check
-let chosenIndex = null;
+const els = {
+  levelBadge: document.getElementById('levelBadge'),
+  conceptTitle: document.getElementById('conceptTitle'),
+  missionText: document.getElementById('missionText'),
+  bridge: document.getElementById('bridge'),
+  prompt: document.getElementById('prompt'),
+  sentenceDisplay: document.getElementById('sentenceDisplay'),
+  wordBank: document.getElementById('wordBank'),
+  selectionDisplay: document.getElementById('selectionDisplay'),
+  choices: document.getElementById('choices'),
+  feedback: document.getElementById('feedback'),
+  scoreValue: document.getElementById('scoreValue'),
+  streakValue: document.getElementById('streakValue'),
+  progressBar: document.getElementById('progressBar'),
+  progressText: document.getElementById('progressText'),
+  checkBtn: document.getElementById('checkBtn'),
+  nextBtn: document.getElementById('nextBtn'),
+  resetBtn: document.getElementById('resetBtn'),
+  hintBtn: document.getElementById('hintBtn'),
+  skipBtn: document.getElementById('skipBtn'),
+  gameContainer: document.getElementById('gameContainer'),
+  tutorialOverlay: document.getElementById('tutorialOverlay')
+};
 
-// scramble seed for consistent redraw within a puzzle
-let scrambleOrder = [];
+// ===========================
+// HELPERS
+// ===========================
 
-// issue log
-let issueLog = [];
+function currentLevel() {
+  return LEVELS[levelIndex];
+}
 
-// ----------------------------- Helpers -----------------------------
-function currentLevel() { return LEVELS[levelIndex]; }
-function currentPuzzle() { return currentLevel().puzzles[puzzleIndex]; }
+function currentPuzzle() {
+  return currentLevel().puzzles[puzzleIndex];
+}
 
 function tokenize(sentence) {
-  return sentence
+  const parts = sentence
     .replace(/([,.!?;:])/g, " $1 ")
     .replace(/\s+/g, " ")
     .trim()
     .split(" ");
+  
+  return parts.map((t, i) => ({
+    id: `t${i}_${Math.random().toString(16).slice(2)}`,
+    text: t,
+    norm: t.toLowerCase(),
+    rawIndex: i
+  }));
 }
 
 function normalizeTokens(tokens) {
   const noSpaceBefore = new Set([",", ".", "!", "?", ";", ":"]);
   let out = "";
   tokens.forEach((t, i) => {
-    if (i === 0) { out += t; return; }
-    if (noSpaceBefore.has(t)) out += t;
-    else out += " " + t;
+    const tok = typeof t === "string" ? t : t.text;
+    if (i === 0) { out += tok; return; }
+    if (noSpaceBefore.has(tok)) out += tok;
+    else out += " " + tok;
   });
   return out.trim();
 }
 
-function escapeHtml(s) {
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function setFeedback(msg, kind) {
-  els.feedback.textContent = msg;
-  els.feedback.classList.remove("good", "bad");
-  if (kind) els.feedback.classList.add(kind);
-}
-
-function updateStats() {
-  els.score.textContent = String(score);
-  els.streak.textContent = String(streak);
-}
-
-function shuffledIndices(n) {
-  const idx = Array.from({ length: n }, (_, i) => i);
-  for (let i = idx.length - 1; i > 0; i--) {
+function shuffleArray(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [idx[i], idx[j]] = [idx[j], idx[i]];
+    [a[i], a[j]] = [a[j], a[i]];
   }
-  return idx;
+  return a;
 }
 
-function selectionSummary(tokens) {
-  if (!tokens || tokens.length === 0) return "…";
-  if (selected.size === 0) return "Click words to select them (buttons are scrambled on purpose).";
-  const picked = Array.from(selected).sort((a, b) => a - b).map(i => tokens[i]);
-  return `Selected: ${normalizeTokens(picked)}`;
+function multiset(arr) {
+  const m = new Map();
+  for (const x of arr) m.set(x, (m.get(x) || 0) + 1);
+  return m;
 }
 
-function renderBuiltPanel(text) {
-  els.built.textContent = text || "…";
-}
-
-function clearInteractionState() {
-  selected = new Set();
-  builtOrder = [];
-  step = 0;
-  scrambleOrder = [];
-  chosenIndex = null;
-}
-
-function renderHeader() {
-  els.levelLabel.textContent = `Level ${currentLevel().id}`;
-  els.conceptLabel.textContent = currentLevel().concept;
-  els.mission.textContent = currentLevel().mission;
-  els.bridge.textContent = currentLevel().bridge;
-  els.hint.textContent = "";
-}
-
-function logIssue(kind, details = {}) {
-  const lvl = currentLevel();
-  const p = currentPuzzle();
-  issueLog.push({
-    kind,
-    time: new Date().toISOString(),
-    levelId: lvl.id,
-    concept: lvl.concept,
-    puzzleIndex,
-    puzzleType: p.type,
-    details,
-  });
-}
-
-async function copyToClipboard(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    try {
-      window.prompt("Copy this text:", text);
-      return false;
-    } catch {
-      return false;
-    }
-  }
-}
-
-function skipPuzzle() {
-  logIssue("skipped");
-  streak = 0;
-  updateStats();
-  setFeedback("⏭️ Skipped (logged).", "bad");
-  next();
-}
-
-async function reportError() {
-  const p = currentPuzzle();
-  const tokens = p.sentence ? tokenize(p.sentence) : null;
-
-  const payload = {
-    message: "Reported puzzle issue",
-    time: new Date().toISOString(),
-    levelId: currentLevel().id,
-    concept: currentLevel().concept,
-    puzzleIndex,
-    puzzle: p,
-    tokens,
-    selectedIndices: Array.from(selected).sort((a, b) => a - b),
-    selectedWords: tokens ? Array.from(selected).sort((a, b) => a - b).map(i => tokens[i]) : null,
-    chosenIndex,
-    builtOrder: builtOrder.slice(),
-    score,
-    streak,
-  };
-
-  logIssue("reported", payload);
-
-  const ok = await copyToClipboard(JSON.stringify(payload, null, 2));
-  if (ok) setFeedback("📋 Report copied to clipboard. Paste into email/GitHub issue.", "good");
-  else setFeedback("📋 Report shown for copy (clipboard blocked).", "good");
-}
-
-function renderControls() {
-  const p = currentPuzzle();
-  let html = `<li><strong>${escapeHtml(p.prompt || "")}</strong></li>`;
-
-  if (p.type === "mc") {
-    html += `<li class="small">Choose one (then press Check):</li>`;
-    html += `<li>${p.options.map((opt, i) =>
-      `<button class="token" data-choice="${i}" style="${chosenIndex === i ? "border-color:#6ee7ff;" : ""}">${escapeHtml(opt)}</button>`
-    ).join(" ")}</li>`;
-  }
-
-  if (p.type === "classify") {
-    html += `<li class="small">Choose one (then press Check):</li>`;
-    html += `<li>${p.options.map((opt, i) =>
-      `<button class="token" data-choice="${i}" style="${chosenIndex === i ? "border-color:#6ee7ff;" : ""}">${escapeHtml(opt)}</button>`
-    ).join(" ")}</li>`;
-  }
-
-  if (p.type === "fix") {
-    html += `<li class="small">Choose the correct fix (then press Check):</li>`;
-    html += `<li>${p.choices.map((opt, i) =>
-      `<button class="token" data-choice="${i}" style="${chosenIndex === i ? "border-color:#6ee7ff;" : ""}">${escapeHtml(opt)}</button>`
-    ).join(" ")}</li>`;
-  }
-
-  if (p.type === "dual-select") {
-    html += `<li class="small"><em>Two steps:</em> first select the dependent clause, then the independent clause.</li>`;
-    html += `<li class="small">Current step: <strong>${step === 0 ? "DEPENDENT" : "INDEPENDENT"}</strong></li>`;
-  }
-
-  if (p.type === "xray") {
-    const t = p.xrayTargets[step];
-    html += `<li class="small">X-Ray Step ${step + 1}/${p.xrayTargets.length}: <em>${escapeHtml(t.prompt)}</em></li>`;
-  }
-
-  if (p.type === "reorder") {
-    html += `<li class="small">Click words to build the phrase. Use Undo/Reset if needed.</li>`;
-  }
-
-  els.checks.innerHTML = html;
-
-  // choice selection (grading only on Check)
-  els.checks.querySelectorAll("[data-choice]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      chosenIndex = Number(btn.getAttribute("data-choice"));
-      setFeedback("Selected. Now press Check.", null);
-      els.nextBtn.disabled = true;
-      renderControls();
-    });
-  });
-}
-
-function renderSentenceBank() {
-  const p = currentPuzzle();
-  els.bank.innerHTML = "";
-
-  // REORDER PUZZLES
-  if (p.type === "reorder") {
-    p.bank.forEach((w) => {
-      const btn = document.createElement("button");
-      btn.className = "token";
-      btn.textContent = w;
-      btn.addEventListener("click", () => {
-        builtOrder.push(w);
-        setFeedback("", null);
-        els.nextBtn.disabled = true;
-        renderBuiltPanel(normalizeTokens(builtOrder));
-      });
-      els.bank.appendChild(btn);
-    });
-    renderBuiltPanel(builtOrder.length ? normalizeTokens(builtOrder) : "Build the phrase here…");
-    return;
-  }
-
-  // MC: show stem, no bank
-  if (p.type === "mc") {
-    renderBuiltPanel(p.stem);
-    return;
-  }
-
-  // FIX/CLASSIFY: show sentence, no bank
-  if (p.type === "fix" || p.type === "classify") {
-    renderBuiltPanel(p.sentence);
-    return;
-  }
-
-  // SELECTION PUZZLES: scrambled token buttons
-  const tokens = tokenize((p.sentence || "").trim());
-  if (scrambleOrder.length !== tokens.length) scrambleOrder = shuffledIndices(tokens.length);
-
-  scrambleOrder.forEach((idx) => {
-    const tok = tokens[idx];
-    const btn = document.createElement("button");
-    btn.className = "token";
-    btn.textContent = tok;
-
-    if (selected.has(idx)) btn.style.borderColor = "#6ee7ff";
-
-    btn.addEventListener("click", () => {
-      if (selected.has(idx)) selected.delete(idx);
-      else selected.add(idx);
-      setFeedback("", null);
-      els.nextBtn.disabled = true;
-      renderSentenceBank();
-      renderBuiltPanel(selectionSummary(tokens));
-    });
-
-    els.bank.appendChild(btn);
-  });
-
-  renderBuiltPanel(selectionSummary(tokens));
-}
-
-function resetPuzzle() {
-  clearInteractionState();
-  setFeedback("", null);
-  els.nextBtn.disabled = true;
-
-  // scramble reorder bank by default
-  const p = currentPuzzle();
-  if (p.type === "reorder" && Array.isArray(p.bank)) {
-    for (let i = p.bank.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [p.bank[i], p.bank[j]] = [p.bank[j], p.bank[i]];
-    }
-  }
-
-  renderControls();
-  renderSentenceBank();
-}
-
-function shufflePuzzle() {
-  const p = currentPuzzle();
-  if (p.type === "reorder" && Array.isArray(p.bank)) {
-    for (let i = p.bank.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [p.bank[i], p.bank[j]] = [p.bank[j], p.bank[i]];
-    }
-    renderSentenceBank();
-    setFeedback("Shuffled.", null);
-    return;
-  }
-  setFeedback("Tokens are already scrambled for selection puzzles.", null);
-}
-
-function undo() {
-  const p = currentPuzzle();
-  if (p.type === "reorder") {
-    builtOrder.pop();
-    els.nextBtn.disabled = true;
-    renderBuiltPanel(builtOrder.length ? normalizeTokens(builtOrder) : "Build the phrase here…");
-    return;
-  }
-
-  if (selected.size === 0) return;
-  const arr = Array.from(selected);
-  selected.delete(arr[arr.length - 1]);
-  els.nextBtn.disabled = true;
-  renderSentenceBank();
-}
-
-function equalsSet(a, b) {
+function multisetsEqual(a, b) {
   if (a.size !== b.size) return false;
-  for (const x of a) if (!b.has(x)) return false;
+  for (const [k, v] of a.entries()) {
+    if (b.get(k) !== v) return false;
+  }
   return true;
 }
 
-function checkSelect(tokens, label) {
-  const p = currentPuzzle();
-  const t = p.targets[0];
-  const targetSet = new Set(t.indices);
-
-  if (equalsSet(selected, targetSet)) {
-    score += 3;
-    streak += 1;
-    updateStats();
-    setFeedback(`✅ Correct ${label}! ${p.explain || ""}`, "good");
-    els.nextBtn.disabled = false;
+function updateStats() {
+  els.scoreValue.textContent = score;
+  els.streakValue.textContent = streak;
+  
+  if (streak >= 3) {
+    els.streakValue.classList.add('active');
   } else {
-    streak = 0;
-    updateStats();
-    const picked = Array.from(selected).sort((a, b) => a - b).map(i => tokens[i]);
-    setFeedback(
-      `❌ Not quite. You selected: "${normalizeTokens(picked)}". ${currentLevel().hint}`,
-      "bad"
-    );
-    els.nextBtn.disabled = true;
+    els.streakValue.classList.remove('active');
+  }
+  
+  const progress = (completedPuzzles / TOTAL_PUZZLES) * 100;
+  els.progressBar.style.width = progress + '%';
+  els.progressText.textContent = `${completedPuzzles}/${TOTAL_PUZZLES}`;
+}
+
+function showFeedback(message, type) {
+  els.feedback.textContent = message;
+  els.feedback.className = `feedback ${type}`;
+  els.feedback.classList.remove('hidden');
+}
+
+function hideFeedback() {
+  els.feedback.classList.add('hidden');
+}
+
+function celebrate() {
+  const emoji = ['🎉', '✨', '🌟', '💫', '🎊'][Math.floor(Math.random() * 5)];
+  const cel = document.createElement('div');
+  cel.className = 'celebration';
+  cel.textContent = emoji;
+  document.body.appendChild(cel);
+  setTimeout(() => cel.remove(), 1000);
+}
+
+function playSound(type) {
+  // Placeholder for sound effects - you can add actual audio later
+  // For now, we'll use visual feedback only
+}
+
+// ===========================
+// RENDER
+// ===========================
+
+function renderHeader() {
+  const level = currentLevel();
+  els.levelBadge.textContent = `Level ${level.id}/${LEVELS.length}`;
+  els.conceptTitle.textContent = level.concept;
+  els.missionText.textContent = level.mission;
+  els.bridge.textContent = level.bridge;
+}
+
+function renderPuzzle() {
+  const puzzle = currentPuzzle();
+  const level = currentLevel();
+  
+  els.prompt.textContent = puzzle.prompt;
+  
+  // Clear previous state
+  els.wordBank.innerHTML = '';
+  els.choices.innerHTML = '';
+  els.sentenceDisplay.textContent = '';
+  selectedIds.clear();
+  chosenIndex = null;
+  builtOrder = [];
+  
+  hideFeedback();
+  els.nextBtn.disabled = true;
+  
+  // Render based on type
+  if (puzzle.type === 'selectWords') {
+    renderSelectWords(puzzle, level.colorClass);
+  } else if (puzzle.type === 'mc') {
+    renderMultipleChoice(puzzle);
+  } else if (puzzle.type === 'fix') {
+    renderFix(puzzle);
+  } else if (puzzle.type === 'reorder') {
+    renderReorder(puzzle);
+  }
+  
+  updateSelectionDisplay();
+}
+
+function renderSelectWords(puzzle, colorClass) {
+  els.sentenceDisplay.textContent = puzzle.sentence;
+  
+  currentTokens = tokenize(puzzle.sentence);
+  scrambleOrder = shuffleArray(currentTokens.map(t => t.id));
+  
+  scrambleOrder.forEach(id => {
+    const tok = currentTokens.find(t => t.id === id);
+    const btn = document.createElement('button');
+    btn.className = `word-btn ${colorClass}`;
+    btn.textContent = tok.text;
+    
+    btn.onclick = () => {
+      if (selectedIds.has(tok.id)) {
+        selectedIds.delete(tok.id);
+      } else {
+        selectedIds.add(tok.id);
+      }
+      renderSelectWords(puzzle, colorClass);
+      updateSelectionDisplay();
+    };
+    
+    if (selectedIds.has(tok.id)) {
+      btn.classList.add('selected');
+    }
+    
+    els.wordBank.appendChild(btn);
+  });
+}
+
+function renderMultipleChoice(puzzle) {
+  els.sentenceDisplay.textContent = puzzle.stem;
+  
+  puzzle.options.forEach((option, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = option;
+    
+    if (chosenIndex === i) {
+      btn.classList.add('selected');
+    }
+    
+    btn.onclick = () => {
+      chosenIndex = i;
+      renderMultipleChoice(puzzle);
+      showFeedback("Choice selected. Press 'Check Answer' to continue.", 'neutral');
+    };
+    
+    els.choices.appendChild(btn);
+  });
+}
+
+function renderFix(puzzle) {
+  els.sentenceDisplay.textContent = puzzle.sentence;
+  
+  puzzle.choices.forEach((choice, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = choice;
+    
+    if (chosenIndex === i) {
+      btn.classList.add('selected');
+    }
+    
+    btn.onclick = () => {
+      chosenIndex = i;
+      renderFix(puzzle);
+      showFeedback("Choice selected. Press 'Check Answer' to continue.", 'neutral');
+    };
+    
+    els.choices.appendChild(btn);
+  });
+}
+
+function renderReorder(puzzle) {
+  els.sentenceDisplay.textContent = "Build the phrase in the correct order:";
+  
+  const words = shuffleArray(puzzle.bank.slice());
+  
+  words.forEach(word => {
+    const btn = document.createElement('button');
+    btn.className = 'word-btn';
+    btn.textContent = word;
+    
+    btn.onclick = () => {
+      builtOrder.push(word);
+      updateSelectionDisplay();
+    };
+    
+    els.wordBank.appendChild(btn);
+  });
+}
+
+function updateSelectionDisplay() {
+  const puzzle = currentPuzzle();
+  
+  if (puzzle.type === 'selectWords') {
+    if (selectedIds.size === 0) {
+      els.selectionDisplay.className = 'selection-display empty';
+      els.selectionDisplay.textContent = 'Click words to select them';
+    } else {
+      els.selectionDisplay.className = 'selection-display';
+      const picked = currentTokens
+        .filter(t => selectedIds.has(t.id))
+        .sort((a, b) => a.rawIndex - b.rawIndex)
+        .map(t => t.text);
+      els.selectionDisplay.textContent = `Your selection: ${normalizeTokens(picked)}`;
+    }
+  } else if (puzzle.type === 'reorder') {
+    if (builtOrder.length === 0) {
+      els.selectionDisplay.className = 'selection-display empty';
+      els.selectionDisplay.textContent = 'Click words to build the phrase';
+    } else {
+      els.selectionDisplay.className = 'selection-display';
+      els.selectionDisplay.textContent = normalizeTokens(builtOrder);
+    }
+  } else {
+    els.selectionDisplay.className = 'selection-display empty';
+    els.selectionDisplay.textContent = 'Choose an option above';
+  }
+}
+
+// ===========================
+// CHECKING
+// ===========================
+
+function checkAnswer() {
+  const puzzle = currentPuzzle();
+  
+  if (puzzle.type === 'selectWords') {
+    checkSelectWords();
+  } else if (puzzle.type === 'mc' || puzzle.type === 'fix') {
+    checkChoice();
+  } else if (puzzle.type === 'reorder') {
+    checkReorder();
+  }
+}
+
+function checkSelectWords() {
+  const puzzle = currentPuzzle();
+  const picked = currentTokens
+    .filter(t => selectedIds.has(t.id))
+    .sort((a, b) => a.rawIndex - b.rawIndex)
+    .map(t => t.norm);
+  
+  const pickedMS = multiset(picked);
+  
+  const correct = (puzzle.accept || []).some(wordSet => {
+    const normSet = wordSet.map(w => String(w).toLowerCase());
+    return multisetsEqual(pickedMS, multiset(normSet));
+  });
+  
+  if (correct) {
+    handleCorrect(puzzle.explain);
+  } else {
+    handleIncorrect("Not quite! " + currentLevel().mission);
+  }
+}
+
+function checkChoice() {
+  const puzzle = currentPuzzle();
+  
+  if (chosenIndex === null) {
+    showFeedback("Please select an option first!", 'neutral');
+    return;
+  }
+  
+  if (chosenIndex === puzzle.answerIndex) {
+    handleCorrect(puzzle.explain);
+  } else {
+    handleIncorrect("Not quite! " + currentLevel().mission);
   }
 }
 
 function checkReorder() {
-  const p = currentPuzzle();
-  const builtStr = normalizeTokens(builtOrder);
-  const ok = p.answers.some(ans => normalizeTokens(ans) === builtStr);
-
-  if (ok) {
-    score += 4;
-    streak += 1;
-    updateStats();
-    setFeedback(`✅ Correct. ${p.explain || ""}`, "good");
-    els.nextBtn.disabled = false;
+  const puzzle = currentPuzzle();
+  const builtNorm = builtOrder.map(w => String(w).toLowerCase());
+  const builtStr = builtNorm.join(" ");
+  
+  const correct = (puzzle.answers || []).some(ans => {
+    const ansNorm = ans.map(w => String(w).toLowerCase()).join(" ");
+    return ansNorm === builtStr;
+  });
+  
+  if (correct) {
+    handleCorrect(puzzle.explain);
   } else {
-    streak = 0;
-    updateStats();
-    setFeedback(`❌ Not quite. You built: "${builtStr}". Reset and try again.`, "bad");
-    els.nextBtn.disabled = true;
+    handleIncorrect("Not quite! Reset and try again.");
   }
 }
 
-function checkDualSelect() {
-  const p = currentPuzzle();
-  const depSet = new Set(p.dependent);
-  const indSet = new Set(p.independent);
-
-  if (step === 0) {
-    if (equalsSet(selected, depSet)) {
-      score += 2;
-      streak += 1;
-      updateStats();
-      setFeedback("✅ Dependent clause correct. Now select the INDEPENDENT clause.", "good");
-      step = 1;
-      selected = new Set();
-      scrambleOrder = [];
-      els.nextBtn.disabled = true;
-      renderControls();
-      renderSentenceBank();
-    } else {
-      streak = 0;
-      updateStats();
-      setFeedback("❌ Not quite. Select the dependent clause (it can’t stand alone).", "bad");
-    }
-    return;
+function handleCorrect(explanation) {
+  const basePoints = 5;
+  const streakBonus = Math.min(streak, 10);
+  const points = basePoints + streakBonus;
+  
+  score += points;
+  streak += 1;
+  completedPuzzles += 1;
+  
+  updateStats();
+  celebrate();
+  
+  let message = `✅ Correct! +${points} points`;
+  if (streakBonus > 0) {
+    message += ` (${streakBonus} streak bonus!)`;
   }
-
-  if (equalsSet(selected, indSet)) {
-    score += 3;
-    streak += 1;
-    updateStats();
-    setFeedback(`✅ Independent clause correct! ${p.explain || ""}`, "good");
-    els.nextBtn.disabled = false;
-  } else {
-    streak = 0;
-    updateStats();
-    setFeedback("❌ Not quite. Select the clause that can stand alone.", "bad");
-    els.nextBtn.disabled = true;
-  }
+  message += ` ${explanation}`;
+  
+  showFeedback(message, 'correct');
+  els.nextBtn.disabled = false;
 }
 
-function checkXray(tokens) {
-  const p = currentPuzzle();
-  const target = p.xrayTargets[step];
-  const targetSet = new Set(target.indices);
-
-  if (equalsSet(selected, targetSet)) {
-    score += 2;
-    streak += 1;
-    updateStats();
-    setFeedback(`✅ ${target.label.toUpperCase()} correct.`, "good");
-
-    step += 1;
-    selected = new Set();
-    scrambleOrder = [];
-    els.nextBtn.disabled = true;
-
-    if (step >= p.xrayTargets.length) {
-      score += 6;
-      updateStats();
-      setFeedback(`🏁 X-Ray complete. ${p.explain || ""}`, "good");
-      els.nextBtn.disabled = false;
-    }
-
-    renderControls();
-    renderSentenceBank();
-  } else {
-    streak = 0;
-    updateStats();
-    setFeedback(`❌ Not quite. ${target.prompt}`, "bad");
-    els.nextBtn.disabled = true;
-  }
+function handleIncorrect(hint) {
+  streak = 0;
+  updateStats();
+  showFeedback(`❌ ${hint}`, 'incorrect');
 }
 
-function checkAnswer() {
-  const p = currentPuzzle();
+// ===========================
+// CONTROLS
+// ===========================
 
-  // MC/FIX/CLASSIFY: grade only on Check
-  if (p.type === "mc" || p.type === "fix" || p.type === "classify") {
-    if (chosenIndex === null) {
-      setFeedback("Choose an option in Quick Checks, then press Check.", "bad");
-      els.nextBtn.disabled = true;
-      return;
-    }
+function reset() {
+  renderPuzzle();
+}
 
-    const correct = (chosenIndex === p.answerIndex);
-    if (correct) {
-      score += 3;
-      streak += 1;
-      updateStats();
-      setFeedback(`✅ Correct. ${p.explain || ""}`, "good");
-      els.nextBtn.disabled = false;
-    } else {
-      streak = 0;
-      updateStats();
-      setFeedback(`❌ Not quite. ${currentLevel().hint}`, "bad");
-      els.nextBtn.disabled = true;
-    }
-    return;
-  }
+function showHint() {
+  const hint = currentLevel().bridge;
+  showFeedback(`💡 Hint: ${hint}`, 'neutral');
+}
 
-  if (p.type === "reorder") {
-    checkReorder();
-    return;
-  }
-
-  const tokens = tokenize(p.sentence);
-
-  if (p.type === "select") {
-    checkSelect(tokens, p.targets[0].label);
-    return;
-  }
-
-  if (p.type === "dual-select") {
-    checkDualSelect();
-    return;
-  }
-
-  if (p.type === "xray") {
-    checkXray(tokens);
-    return;
-  }
-
-  setFeedback("Unsupported puzzle type.", "bad");
+function skip() {
+  showFeedback('⏭️ Skipped (in case of a bug). No points awarded.', 'neutral');
+  streak = 0;
+  completedPuzzles += 1;
+  updateStats();
+  setTimeout(next, 1500);
 }
 
 function next() {
-  const lvl = currentLevel();
-
-  if (puzzleIndex < lvl.puzzles.length - 1) {
-    puzzleIndex += 1;
-    resetPuzzle();
-    setFeedback("Next challenge.", null);
-    return;
-  }
-
-  if (levelIndex < LEVELS.length - 1) {
-    levelIndex += 1;
+  const level = currentLevel();
+  
+  if (puzzleIndex < level.puzzles.length - 1) {
+    puzzleIndex++;
+    renderPuzzle();
+    hideFeedback();
+  } else if (levelIndex < LEVELS.length - 1) {
+    levelIndex++;
     puzzleIndex = 0;
     renderHeader();
-    resetPuzzle();
-    setFeedback("Level up. New concept unlocked.", "good");
-    return;
+    renderPuzzle();
+    showFeedback(`🎊 Level ${levelIndex} complete! New skill unlocked!`, 'correct');
+  } else {
+    showCompletion();
   }
-
-  setFeedback("🏁 You finished Sentence X-Ray Bootcamp. You’re ready for Spanish structure.", "good");
-  els.nextBtn.disabled = true;
-  els.checkBtn.disabled = true;
-  renderBuiltPanel(makeCompletionSummary());
 }
 
-function makeCompletionSummary() {
-  const mins = Math.max(1, Math.round((performance.now() / 1000) / 60));
-  const code = `SLX-${LEVELS.length}-${score}-${Math.floor(Math.random() * 9000 + 1000)}`;
-  return [
-    "Sentence X-Ray — Completion Summary",
-    "----------------------------------",
-    `Levels Completed: ${LEVELS.length}/${LEVELS.length}`,
-    `Score: ${score}`,
-    `Estimated time: ~${mins} min`,
-    "",
-    "What I can do now:",
-    "- Find the verb first (the heartbeat).",
-    "- Identify the subject (who is doing the verb).",
-    "- Use tag questions to discover pronouns and subject–verb pairing.",
-    "- Spot agreement and tense mismatches.",
-    "- Tell sentence vs phrase.",
-    "- Identify dependent vs independent clauses.",
-    "- Identify adjectives/adverbs and understand Spanish adjective placement.",
-    "- Rewrite apostrophe-s possession as 'of' (Spanish uses 'de').",
-    "",
-    "Verification Code:",
-    code
-  ].join("\n");
+function showCompletion() {
+  const finalScore = score;
+  const code = `SD-${LEVELS.length}-${finalScore}-${Math.floor(Math.random() * 9000 + 1000)}`;
+  
+  els.gameContainer.innerHTML = `
+    <div class="completion-screen">
+      <div class="trophy">🏆</div>
+      <h2>Mission Complete!</h2>
+      <p style="font-size: 20px; color: #495057; margin-bottom: 30px;">
+        You've unlocked your Spanish Reading Toolkit!
+      </p>
+      
+      <div class="completion-stats">
+        <p>⭐ Final Score: <strong>${finalScore}</strong></p>
+        <p>🔥 Best Streak: <strong>${Math.max(streak, 0)}</strong></p>
+        <p>📊 Puzzles Completed: <strong>${TOTAL_PUZZLES}/${TOTAL_PUZZLES}</strong></p>
+        <p>🎯 Verification Code: <strong>${code}</strong></p>
+      </div>
+      
+      <div class="skills-unlocked">
+        <h3>🛠️ Skills You've Mastered:</h3>
+        <ul>
+          <li>Find verbs FAST (the heartbeat of every sentence)</li>
+          <li>Identify subjects (who's doing the action)</li>
+          <li>Use tag questions to discover pronouns</li>
+          <li>Match subjects and verbs correctly</li>
+          <li>Align time words with verb tenses</li>
+          <li>Apply Spanish adjective placement (noun + adjective)</li>
+          <li>Rewrite possession without apostrophe-s (using "de")</li>
+        </ul>
+      </div>
+      
+      <p style="margin-top: 30px; font-size: 18px; color: #667eea;">
+        <strong>You're now ready for Spanish 101! 🎉</strong>
+      </p>
+      
+      <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 20px;">
+        Play Again
+      </button>
+    </div>
+  `;
 }
 
-// ----------------------------- Init -----------------------------
+function closeTutorial() {
+  els.tutorialOverlay.style.display = 'none';
+}
+
+// ===========================
+// EVENT LISTENERS
+// ===========================
+
+els.checkBtn.onclick = checkAnswer;
+els.nextBtn.onclick = next;
+els.resetBtn.onclick = reset;
+els.hintBtn.onclick = showHint;
+els.skipBtn.onclick = skip;
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    if (!els.nextBtn.disabled) {
+      next();
+    } else {
+      checkAnswer();
+    }
+  }
+});
+
+// ===========================
+// INIT
+// ===========================
+
 function init() {
   renderHeader();
+  renderPuzzle();
   updateStats();
-  resetPuzzle();
-
-  els.checkBtn.addEventListener("click", checkAnswer);
-  els.resetBtn.addEventListener("click", resetPuzzle);
-  els.undoBtn.addEventListener("click", undo);
-  els.shuffleBtn.addEventListener("click", shufflePuzzle);
-  els.nextBtn.addEventListener("click", next);
-  els.hintBtn.addEventListener("click", () => {
-    els.hint.textContent = currentLevel().hint;
-  });
-
-  if (els.skipBtn) els.skipBtn.addEventListener("click", skipPuzzle);
-  if (els.reportBtn) els.reportBtn.addEventListener("click", reportError);
-
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") checkAnswer();
-  });
 }
 
 init();
+</script>
+
+</body>
+</html>
