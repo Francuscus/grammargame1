@@ -10,7 +10,6 @@
   padding: 0;
   box-sizing: border-box;
 }
-
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -20,7 +19,6 @@ body {
   align-items: center;
   padding: 20px;
 }
-
 .game-container {
   max-width: 900px;
   width: 100%;
@@ -29,7 +27,6 @@ body {
   box-shadow: 0 20px 60px rgba(0,0,0,0.3);
   overflow: hidden;
 }
-
 /* Header */
 .header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -37,7 +34,6 @@ body {
   padding: 25px 30px;
   position: relative;
 }
-
 .level-badge {
   display: inline-block;
   background: rgba(255,255,255,0.2);
@@ -47,19 +43,16 @@ body {
   font-weight: bold;
   margin-bottom: 10px;
 }
-
 .concept-title {
   font-size: 28px;
   font-weight: bold;
   margin-bottom: 10px;
 }
-
 .mission-text {
   font-size: 16px;
   opacity: 0.95;
   line-height: 1.4;
 }
-
 /* Stats bar */
 .stats-bar {
   display: flex;
@@ -69,32 +62,26 @@ body {
   background: #f8f9fa;
   border-bottom: 2px solid #e9ecef;
 }
-
 .stat {
   display: flex;
   align-items: center;
   gap: 8px;
   font-weight: 600;
 }
-
 .stat-value {
   font-size: 24px;
   color: #667eea;
 }
-
 .streak {
   color: #ff6b6b;
 }
-
 .streak.active {
   animation: pulse 0.5s ease-in-out;
 }
-
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.2); }
 }
-
 .progress-bar-container {
   flex: 1;
   margin: 0 30px;
@@ -104,14 +91,12 @@ body {
   overflow: hidden;
   position: relative;
 }
-
 .progress-bar {
   height: 100%;
   background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
   transition: width 0.5s ease;
   border-radius: 10px;
 }
-
 .progress-text {
   position: absolute;
   width: 100%;
@@ -121,12 +106,10 @@ body {
   color: #495057;
   line-height: 12px;
 }
-
 /* Main content */
 .content {
   padding: 30px;
 }
-
 .prompt {
   background: #e7f3ff;
   border-left: 4px solid #667eea;
@@ -137,7 +120,6 @@ body {
   font-weight: 600;
   color: #2c3e50;
 }
-
 .sentence-display {
   background: #f8f9fa;
   padding: 25px;
@@ -152,7 +134,6 @@ body {
   justify-content: center;
   border: 2px dashed #dee2e6;
 }
-
 .word-bank {
   display: flex;
   flex-wrap: wrap;
@@ -161,7 +142,6 @@ body {
   min-height: 100px;
   justify-content: center;
 }
-
 .word-btn {
   padding: 12px 20px;
   border: 2px solid #dee2e6;
@@ -172,32 +152,25 @@ body {
   transition: all 0.2s;
   font-weight: 500;
 }
-
 .word-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-
 .word-btn.selected {
   border-color: #667eea;
   background: #e7f3ff;
   transform: scale(1.05);
 }
-
 .word-btn.verb { border-color: #ff6b6b; }
 .word-btn.verb.selected { background: #ffe0e0; border-color: #ff6b6b; }
-
 .word-btn.subject { border-color: #4ecdc4; }
 .word-btn.subject.selected { background: #d4f4f1; border-color: #4ecdc4; }
-
 .word-btn.adjective { border-color: #ffa500; }
 .word-btn.adjective.selected { background: #fff5e0; border-color: #ffa500; }
-
 .word-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
 }
-
 /* Selection display */
 .selection-display {
   background: white;
@@ -213,12 +186,10 @@ body {
   justify-content: center;
   color: #495057;
 }
-
 .selection-display.empty {
   color: #adb5bd;
   font-style: italic;
 }
-
 /* Choices (MC/Fix) */
 .choices {
   display: grid;
@@ -226,7 +197,6 @@ body {
   gap: 15px;
   margin-bottom: 25px;
 }
-
 .choice-btn {
   padding: 18px;
   background: white;
@@ -238,19 +208,16 @@ body {
   font-weight: 500;
   text-align: center;
 }
-
 .choice-btn:hover {
   border-color: #667eea;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-
 .choice-btn.selected {
   border-color: #667eea;
   background: #e7f3ff;
   transform: scale(1.02);
 }
-
 /* Feedback */
 .feedback {
   padding: 20px;
@@ -264,33 +231,27 @@ body {
   gap: 12px;
   font-weight: 500;
 }
-
 .feedback.correct {
   background: #d4edda;
   border: 2px solid #28a745;
   color: #155724;
 }
-
 .feedback.incorrect {
   background: #f8d7da;
   border: 2px solid #dc3545;
   color: #721c24;
 }
-
 .feedback.neutral {
   background: #fff3cd;
   border: 2px solid #ffc107;
   color: #856404;
 }
-
 .feedback.hidden {
   display: none;
 }
-
 .feedback-icon {
   font-size: 24px;
 }
-
 /* Controls */
 .controls {
   display: flex;
@@ -298,7 +259,6 @@ body {
   flex-wrap: wrap;
   justify-content: center;
 }
-
 .btn {
   padding: 14px 28px;
   border: none;
@@ -311,43 +271,35 @@ body {
   align-items: center;
   gap: 8px;
 }
-
 .btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
-
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
 }
-
 .btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
 }
-
 .btn-secondary {
   background: #6c757d;
   color: white;
 }
-
 .btn-success {
   background: #28a745;
   color: white;
 }
-
 .btn-warning {
   background: #ffc107;
   color: #333;
 }
-
 .btn-danger {
   background: #dc3545;
   color: white;
 }
-
 /* Tutorial overlay */
 .tutorial-overlay {
   position: fixed;
@@ -362,7 +314,6 @@ body {
   z-index: 1000;
   padding: 20px;
 }
-
 .tutorial-box {
   background: white;
   padding: 40px;
@@ -370,47 +321,44 @@ body {
   max-width: 600px;
   text-align: center;
 }
-
+/* Make tutorial-box scrollable for gallery */
+.tutorial-box.gallery-box {
+  max-height: 80vh;
+  overflow-y: auto;
+}
 .tutorial-box h2 {
   color: #667eea;
   margin-bottom: 20px;
   font-size: 32px;
 }
-
 .tutorial-box p {
   margin-bottom: 15px;
   line-height: 1.6;
   font-size: 16px;
   color: #495057;
 }
-
 .tutorial-box .btn {
   margin-top: 20px;
 }
-
 /* Completion screen */
 .completion-screen {
   text-align: center;
   padding: 40px;
 }
-
 .completion-screen h2 {
   font-size: 48px;
   color: #667eea;
   margin-bottom: 20px;
 }
-
 .completion-screen .trophy {
   font-size: 80px;
   margin-bottom: 20px;
   animation: bounce 1s infinite;
 }
-
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-20px); }
 }
-
 .completion-stats {
   background: #f8f9fa;
   padding: 30px;
@@ -419,42 +367,35 @@ body {
   display: inline-block;
   text-align: left;
 }
-
 .completion-stats p {
   margin: 10px 0;
   font-size: 18px;
   font-weight: 500;
 }
-
 .skills-unlocked {
   background: #e7f3ff;
   padding: 20px;
   border-radius: 12px;
   margin-top: 20px;
 }
-
 .skills-unlocked h3 {
   color: #667eea;
   margin-bottom: 15px;
 }
-
 .skills-unlocked ul {
   list-style: none;
   text-align: left;
 }
-
 .skills-unlocked li {
   padding: 8px 0;
   font-size: 16px;
 }
-
 .skills-unlocked li::before {
   content: "✓ ";
   color: #28a745;
   font-weight: bold;
   margin-right: 8px;
 }
-
 /* Animations */
 @keyframes slideIn {
   from {
@@ -466,11 +407,9 @@ body {
     transform: translateY(0);
   }
 }
-
 .word-btn {
   animation: slideIn 0.3s ease-out;
 }
-
 .celebration {
   position: fixed;
   top: 50%;
@@ -481,7 +420,6 @@ body {
   pointer-events: none;
   animation: celebrate 1s ease-out;
 }
-
 @keyframes celebrate {
   0% {
     opacity: 0;
@@ -496,29 +434,27 @@ body {
     transform: translate(-50%, -50%) scale(1) translateY(-100px);
   }
 }
-
 /* Responsive */
 @media (max-width: 600px) {
   .stats-bar {
     flex-direction: column;
     gap: 15px;
   }
-  
+ 
   .progress-bar-container {
     margin: 0;
     width: 100%;
   }
-  
+ 
   .concept-title {
     font-size: 22px;
   }
-  
+ 
   .word-btn {
     font-size: 16px;
     padding: 10px 16px;
   }
 }
-
 /* Bridge info */
 .bridge {
   background: #fff3cd;
@@ -530,14 +466,34 @@ body {
   line-height: 1.5;
   color: #856404;
 }
-
 .bridge strong {
   color: #533f03;
+}
+/* Gallery styles */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+.gallery-item {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  text-align: center;
+}
+.gallery-item img {
+  max-width: 100%;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+.gallery-item p {
+  font-size: 14px;
 }
 </style>
 </head>
 <body>
-
 <div class="game-container" id="gameContainer">
   <!-- Header -->
   <div class="header">
@@ -545,7 +501,6 @@ body {
     <div class="concept-title" id="conceptTitle">Find the VERB</div>
     <div class="mission-text" id="missionText">Click the verb to find the heartbeat of the sentence.</div>
   </div>
-
   <!-- Stats -->
   <div class="stats-bar">
     <div class="stat">
@@ -561,7 +516,6 @@ body {
       <span class="stat-value streak" id="streakValue">0</span>
     </div>
   </div>
-
   <!-- Content -->
   <div class="content" id="content">
     <div class="bridge" id="bridge"></div>
@@ -580,7 +534,6 @@ body {
     </div>
   </div>
 </div>
-
 <!-- Tutorial overlay -->
 <div class="tutorial-overlay" id="tutorialOverlay">
   <div class="tutorial-box">
@@ -593,12 +546,10 @@ body {
     <button class="btn btn-primary" onclick="closeTutorial()">Let's Go! 🚀</button>
   </div>
 </div>
-
 <script>
 // ===========================
 // GAME DATA
 // ===========================
-
 const LEVELS = [
   {
     id: 1,
@@ -816,30 +767,76 @@ const LEVELS = [
     ]
   }
 ];
-
 // Calculate total puzzles
 const TOTAL_PUZZLES = LEVELS.reduce((sum, level) => sum + level.puzzles.length, 0);
-
+// Rewards for completing levels (famous paintings with blurbs)
+const REWARDS = [
+  {
+    image: 'persistencia.jpg',
+    artist: 'Salvador Dalí',
+    title: 'The Persistence of Memory',
+    blurb: 'This iconic surrealist work depicts melting clocks in a barren landscape, symbolizing the fluidity of time. To tell real paintings from AI-generated ones, look for the artist\'s unique brushwork and subtle textures that come from physical paint application, which AI simulations often lack in authenticity.'
+  },
+  {
+    image: 'goya.jpg',
+    artist: 'Francisco Goya',
+    title: 'Saturn Devouring His Son',
+    blurb: 'A dark and haunting depiction from Goya\'s Black Paintings series, showing the Titan Saturn consuming his child. Real artworks like this have provenance and material analysis that confirm authenticity, whereas AI-generated images may have digital artifacts or inconsistent anatomical details.'
+  },
+  {
+    image: 'ledesma.jpg',
+    artist: 'Clara Ledesma',
+    title: 'Untitled',
+    blurb: 'An abstract work by the Dominican artist, featuring vibrant colors and forms. To differentiate from AI, note the organic imperfections and personal style evolution in the artist\'s oeuvre, which AI struggles to mimic consistently.'
+  },
+  {
+    image: 'el_greco.jpg',
+    artist: 'El Greco',
+    title: 'Portrait of Cardinal Fernando Niño de Guevara',
+    blurb: 'This Mannerist portrait captures the inquisitor with elongated figures and dramatic lighting. Authentic paintings show layers of paint and craquelure from age, unlike smooth, flawless AI outputs.'
+  },
+  {
+    image: 'velazquez.jpg',
+    artist: 'Diego Velázquez',
+    title: 'Las Meninas',
+    blurb: 'A complex Baroque composition depicting the Spanish royal family and their attendants. Real vs. AI: Examine the masterful use of light and shadow, and the physical canvas texture visible in high-resolution scans.'
+  },
+  {
+    image: 'diego_rivera.jpg',
+    artist: 'Diego Rivera',
+    title: 'Sueño de una Tarde Dominical en la Alameda Central',
+    blurb: 'A mural depicting Mexican history and figures in a dreamlike park setting. To spot AI fakes, check for historical accuracy in details and the artist\'s signature style, as AI may introduce anachronisms or stylistic inconsistencies.'
+  },
+  {
+    image: 'frida.jpg',
+    artist: 'Frida Kahlo',
+    title: 'Las Dos Fridas',
+    blurb: 'This self-portrait shows two versions of Frida connected by veins, symbolizing her heritage and pain. Real paintings have tangible evidence like X-rays showing underdrawings, which AI cannot replicate.'
+  },
+  {
+    image: 'wilfredo_lam.jpg',
+    artist: 'Wilfredo Lam',
+    title: 'La Jungla',
+    blurb: 'A Cubist-inspired work blending Afro-Cuban elements with jungle motifs. Distinguishing from AI: Look for the fusion of cultural influences that reflect the artist\'s life, often mishandled in AI generations due to lack of contextual understanding.'
+  }
+];
 // ===========================
 // STATE
 // ===========================
-
 let levelIndex = 0;
 let puzzleIndex = 0;
 let score = 0;
 let streak = 0;
 let completedPuzzles = 0;
-
 let selectedIds = new Set();
 let currentTokens = [];
 let scrambleOrder = [];
 let chosenIndex = null;
 let builtOrder = [];
-
+let unlockedPaintings = [];
 // ===========================
 // ELEMENTS
 // ===========================
-
 const els = {
   levelBadge: document.getElementById('levelBadge'),
   conceptTitle: document.getElementById('conceptTitle'),
@@ -863,26 +860,22 @@ const els = {
   gameContainer: document.getElementById('gameContainer'),
   tutorialOverlay: document.getElementById('tutorialOverlay')
 };
-
 // ===========================
 // HELPERS
 // ===========================
-
 function currentLevel() {
   return LEVELS[levelIndex];
 }
-
 function currentPuzzle() {
   return currentLevel().puzzles[puzzleIndex];
 }
-
 function tokenize(sentence) {
   const parts = sentence
     .replace(/([,.!?;:])/g, " $1 ")
     .replace(/\s+/g, " ")
     .trim()
     .split(" ");
-  
+ 
   return parts.map((t, i) => ({
     id: `t${i}_${Math.random().toString(16).slice(2)}`,
     text: t,
@@ -890,7 +883,6 @@ function tokenize(sentence) {
     rawIndex: i
   }));
 }
-
 function normalizeTokens(tokens) {
   const noSpaceBefore = new Set([",", ".", "!", "?", ";", ":"]);
   let out = "";
@@ -902,7 +894,6 @@ function normalizeTokens(tokens) {
   });
   return out.trim();
 }
-
 function shuffleArray(arr) {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
@@ -911,13 +902,11 @@ function shuffleArray(arr) {
   }
   return a;
 }
-
 function multiset(arr) {
   const m = new Map();
   for (const x of arr) m.set(x, (m.get(x) || 0) + 1);
   return m;
 }
-
 function multisetsEqual(a, b) {
   if (a.size !== b.size) return false;
   for (const [k, v] of a.entries()) {
@@ -925,32 +914,28 @@ function multisetsEqual(a, b) {
   }
   return true;
 }
-
 function updateStats() {
   els.scoreValue.textContent = score;
   els.streakValue.textContent = streak;
-  
+ 
   if (streak >= 3) {
     els.streakValue.classList.add('active');
   } else {
     els.streakValue.classList.remove('active');
   }
-  
+ 
   const progress = (completedPuzzles / TOTAL_PUZZLES) * 100;
   els.progressBar.style.width = progress + '%';
   els.progressText.textContent = `${completedPuzzles}/${TOTAL_PUZZLES}`;
 }
-
 function showFeedback(message, type) {
   els.feedback.textContent = message;
   els.feedback.className = `feedback ${type}`;
   els.feedback.classList.remove('hidden');
 }
-
 function hideFeedback() {
   els.feedback.classList.add('hidden');
 }
-
 function celebrate() {
   const emoji = ['🎉', '✨', '🌟', '💫', '🎊'][Math.floor(Math.random() * 5)];
   const cel = document.createElement('div');
@@ -959,11 +944,9 @@ function celebrate() {
   document.body.appendChild(cel);
   setTimeout(() => cel.remove(), 1000);
 }
-
 // ===========================
 // RENDER
 // ===========================
-
 function renderHeader() {
   const level = currentLevel();
   els.levelBadge.textContent = `Level ${level.id}/${LEVELS.length}`;
@@ -971,13 +954,12 @@ function renderHeader() {
   els.missionText.textContent = level.mission;
   els.bridge.textContent = level.bridge;
 }
-
 function renderPuzzle() {
   const puzzle = currentPuzzle();
   const level = currentLevel();
-  
+ 
   els.prompt.textContent = puzzle.prompt;
-  
+ 
   // Clear previous state
   els.wordBank.innerHTML = '';
   els.choices.innerHTML = '';
@@ -987,10 +969,10 @@ function renderPuzzle() {
   builtOrder = [];
   currentTokens = [];
   scrambleOrder = [];
-  
+ 
   hideFeedback();
   els.nextBtn.disabled = true;
-  
+ 
   // Render based on type
   if (puzzle.type === 'selectWords') {
     renderSelectWords(puzzle, level.colorClass);
@@ -1001,28 +983,27 @@ function renderPuzzle() {
   } else if (puzzle.type === 'reorder') {
     renderReorder(puzzle);
   }
-  
+ 
   updateSelectionDisplay();
 }
-
 function renderSelectWords(puzzle, colorClass) {
   els.sentenceDisplay.textContent = puzzle.sentence;
-  
+ 
   // Only tokenize and scramble once per puzzle
   if (currentTokens.length === 0) {
     currentTokens = tokenize(puzzle.sentence);
     scrambleOrder = shuffleArray(currentTokens.map(t => t.id));
   }
-  
+ 
   // Clear and rebuild word bank
   els.wordBank.innerHTML = '';
-  
+ 
   scrambleOrder.forEach(id => {
     const tok = currentTokens.find(t => t.id === id);
     const btn = document.createElement('button');
     btn.className = `word-btn ${colorClass}`;
     btn.textContent = tok.text;
-    
+   
     btn.onclick = () => {
       if (selectedIds.has(tok.id)) {
         selectedIds.delete(tok.id);
@@ -1032,21 +1013,20 @@ function renderSelectWords(puzzle, colorClass) {
       updateWordButtons();
       updateSelectionDisplay();
     };
-    
+   
     if (selectedIds.has(tok.id)) {
       btn.classList.add('selected');
     }
-    
+   
     els.wordBank.appendChild(btn);
   });
 }
-
 function updateWordButtons() {
   const buttons = els.wordBank.querySelectorAll('.word-btn');
   buttons.forEach(btn => {
     const tokenText = btn.textContent;
     const token = currentTokens.find(t => t.text === tokenText);
-    
+   
     if (token && selectedIds.has(token.id)) {
       btn.classList.add('selected');
     } else {
@@ -1054,73 +1034,69 @@ function updateWordButtons() {
     }
   });
 }
-
 function renderMultipleChoice(puzzle) {
   els.sentenceDisplay.textContent = puzzle.stem;
-  
+ 
   puzzle.options.forEach((option, i) => {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
     btn.textContent = option;
-    
+   
     if (chosenIndex === i) {
       btn.classList.add('selected');
     }
-    
+   
     btn.onclick = () => {
       chosenIndex = i;
       renderMultipleChoice(puzzle);
       updateSelectionDisplay();
     };
-    
+   
     els.choices.appendChild(btn);
   });
 }
-
 function renderFix(puzzle) {
   els.sentenceDisplay.textContent = puzzle.sentence;
-  
+ 
   puzzle.choices.forEach((choice, i) => {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
     btn.textContent = choice;
-    
+   
     if (chosenIndex === i) {
       btn.classList.add('selected');
     }
-    
+   
     btn.onclick = () => {
       chosenIndex = i;
       renderFix(puzzle);
       updateSelectionDisplay();
     };
-    
+   
     els.choices.appendChild(btn);
   });
 }
-
 function renderReorder(puzzle) {
   els.sentenceDisplay.textContent = "Build the phrase in the correct order:";
-  
+ 
   const words = shuffleArray(puzzle.bank.slice());
-  
+ 
   words.forEach(word => {
     const btn = document.createElement('button');
     btn.className = 'word-btn';
     btn.textContent = word;
-    
+   
     btn.onclick = () => {
       builtOrder.push(word);
       updateSelectionDisplay();
     };
-    
+   
     els.wordBank.appendChild(btn);
   });
 }
-
 function updateSelectionDisplay() {
   const puzzle = currentPuzzle();
-  
+ 
   if (puzzle.type === 'selectWords') {
     if (selectedIds.size === 0) {
       els.selectionDisplay.className = 'selection-display empty';
@@ -1154,14 +1130,12 @@ function updateSelectionDisplay() {
     els.selectionDisplay.textContent = 'Choose an option above';
   }
 }
-
 // ===========================
 // CHECKING
 // ===========================
-
 function checkAnswer() {
   const puzzle = currentPuzzle();
-  
+ 
   if (puzzle.type === 'selectWords') {
     checkSelectWords();
   } else if (puzzle.type === 'mc' || puzzle.type === 'fix') {
@@ -1170,101 +1144,92 @@ function checkAnswer() {
     checkReorder();
   }
 }
-
 function checkSelectWords() {
   const puzzle = currentPuzzle();
   const picked = currentTokens
     .filter(t => selectedIds.has(t.id))
     .sort((a, b) => a.rawIndex - b.rawIndex)
     .map(t => t.norm);
-  
+ 
   const pickedMS = multiset(picked);
-  
+ 
   const correct = (puzzle.accept || []).some(wordSet => {
     const normSet = wordSet.map(w => String(w).toLowerCase());
     return multisetsEqual(pickedMS, multiset(normSet));
   });
-  
+ 
   if (correct) {
     handleCorrect(puzzle.explain);
   } else {
     handleIncorrect("Not quite! " + currentLevel().mission);
   }
 }
-
 function checkChoice() {
   const puzzle = currentPuzzle();
-  
+ 
   if (chosenIndex === null) {
     showFeedback("Please select an option first!", 'neutral');
     return;
   }
-  
+ 
   if (chosenIndex === puzzle.answerIndex) {
     handleCorrect(puzzle.explain);
   } else {
     handleIncorrect("Not quite! " + currentLevel().mission);
   }
 }
-
 function checkReorder() {
   const puzzle = currentPuzzle();
   const builtNorm = builtOrder.map(w => String(w).toLowerCase());
   const builtStr = builtNorm.join(" ");
-  
+ 
   const correct = (puzzle.answers || []).some(ans => {
     const ansNorm = ans.map(w => String(w).toLowerCase()).join(" ");
     return ansNorm === builtStr;
   });
-  
+ 
   if (correct) {
     handleCorrect(puzzle.explain);
   } else {
     handleIncorrect("Not quite! Reset and try again.");
   }
 }
-
 function handleCorrect(explanation) {
   const basePoints = 5;
   const streakBonus = Math.min(streak, 10);
   const points = basePoints + streakBonus;
-  
+ 
   score += points;
   streak += 1;
   completedPuzzles += 1;
-  
+ 
   updateStats();
   celebrate();
-  
+ 
   let message = `✅ Correct! +${points} points`;
   if (streakBonus > 0) {
     message += ` (${streakBonus} streak bonus!)`;
   }
   message += ` ${explanation}`;
-  
+ 
   showFeedback(message, 'correct');
   els.nextBtn.disabled = false;
 }
-
 function handleIncorrect(hint) {
   streak = 0;
   updateStats();
   showFeedback(`❌ ${hint}`, 'incorrect');
 }
-
 // ===========================
 // CONTROLS
 // ===========================
-
 function reset() {
   renderPuzzle();
 }
-
 function showHint() {
   const hint = currentLevel().bridge;
   showFeedback(`💡 Hint: ${hint}`, 'neutral');
 }
-
 function skip() {
   showFeedback('⏭️ Skipped (in case of a bug). No points awarded.', 'neutral');
   streak = 0;
@@ -1272,29 +1237,47 @@ function skip() {
   updateStats();
   setTimeout(next, 1500);
 }
-
 function next() {
   const level = currentLevel();
-  
+ 
   if (puzzleIndex < level.puzzles.length - 1) {
     puzzleIndex++;
     renderPuzzle();
     hideFeedback();
   } else if (levelIndex < LEVELS.length - 1) {
+    const completedLevel = levelIndex + 1;
+    unlockedPaintings.push(REWARDS[completedLevel - 1]);
     levelIndex++;
     puzzleIndex = 0;
     renderHeader();
     renderPuzzle();
-    showFeedback(`🎊 Level ${levelIndex} complete! New skill unlocked!`, 'correct');
+    showFeedback(`🎊 Level ${completedLevel} complete! New skill unlocked!`, 'correct');
+    showReward(completedLevel);
   } else {
     showCompletion();
   }
 }
-
+function showReward(levelId) {
+  const reward = REWARDS[levelId - 1];
+  const overlay = document.createElement('div');
+  overlay.className = 'tutorial-overlay';
+  overlay.style.display = 'flex';
+  const box = document.createElement('div');
+  box.className = 'tutorial-box';
+  box.innerHTML = `
+    <h2>🎨 Level ${levelId} Reward!</h2>
+    <img src="${reward.image}" alt="${reward.title}" style="max-width: 100%; border-radius: 10px; margin-bottom: 20px;">
+    <p><strong>${reward.artist} - ${reward.title}</strong></p>
+    <p>${reward.blurb}</p>
+    <button class="btn btn-primary" onclick="this.parentNode.parentNode.remove()">Continue 🚀</button>
+  `;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
 function showCompletion() {
   const finalScore = score;
   const code = `TK-${LEVELS.length}-${finalScore}-${Math.floor(Math.random() * 9000 + 1000)}`;
-  
+ 
   els.gameContainer.innerHTML = `
     <div class="completion-screen">
       <div class="trophy">🏆</div>
@@ -1302,14 +1285,14 @@ function showCompletion() {
       <p style="font-size: 20px; color: #495057; margin-bottom: 30px;">
         You've unlocked your Spanish Reading Toolkit!
       </p>
-      
+     
       <div class="completion-stats">
         <p>⭐ Final Score: <strong>${finalScore}</strong></p>
         <p>🔥 Best Streak: <strong>${Math.max(streak, 0)}</strong></p>
         <p>📊 Puzzles Completed: <strong>${TOTAL_PUZZLES}/${TOTAL_PUZZLES}</strong></p>
         <p>🎯 Verification Code: <strong>${code}</strong></p>
       </div>
-      
+     
       <div class="skills-unlocked">
         <h3>🛠️ Skills You've Mastered:</h3>
         <ul>
@@ -1322,32 +1305,52 @@ function showCompletion() {
           <li>Rewrite possession without apostrophe-s (using "de")</li>
         </ul>
       </div>
-      
+     
       <p style="margin-top: 30px; font-size: 18px; color: #667eea;">
         <strong>You're now ready for Spanish 101! 🎉</strong>
       </p>
-      
+     
+      <button class="btn btn-primary" onclick="showGallery()" style="margin-top: 20px;">
+        View Your Gallery 🖼️
+      </button>
       <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 20px;">
         Play Again
       </button>
     </div>
   `;
 }
-
+function showGallery() {
+  const overlay = document.createElement('div');
+  overlay.className = 'tutorial-overlay';
+  overlay.style.display = 'flex';
+  const box = document.createElement('div');
+  box.className = 'tutorial-box gallery-box';
+  let html = '<h2>Your Art Gallery</h2><div class="gallery-grid">';
+  unlockedPaintings.forEach(reward => {
+    html += `
+      <div class="gallery-item">
+        <img src="${reward.image}" alt="${reward.title}">
+        <p><strong>${reward.artist} - ${reward.title}</strong></p>
+        <p>${reward.blurb}</p>
+      </div>
+    `;
+  });
+  html += '</div><button class="btn btn-primary" onclick="this.parentNode.parentNode.remove()">Close</button>';
+  box.innerHTML = html;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
 function closeTutorial() {
   els.tutorialOverlay.style.display = 'none';
 }
-
 // ===========================
 // EVENT LISTENERS
 // ===========================
-
 els.checkBtn.onclick = checkAnswer;
 els.nextBtn.onclick = next;
 els.resetBtn.onclick = reset;
 els.hintBtn.onclick = showHint;
 els.skipBtn.onclick = skip;
-
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
     if (!els.nextBtn.disabled) {
@@ -1357,19 +1360,16 @@ document.addEventListener('keydown', (e) => {
     }
   }
 });
-
 // ===========================
 // INIT
 // ===========================
-
 function init() {
+  unlockedPaintings = [];
   renderHeader();
   renderPuzzle();
   updateStats();
 }
-
 init();
 </script>
-
 </body>
 </html>
