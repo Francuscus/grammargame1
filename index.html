@@ -26,7 +26,7 @@ body {
   position: relative;
   z-index: 10;
 }
-/* Gallery Wall */
+/* Gallery Wall - Adjusted for better spacing */
 .gallery-wall {
   position: absolute;
   top: -20px; left: -20px; right: -20px; bottom: -20px;
@@ -270,7 +270,7 @@ const REWARDS = [
 ];
 
 // State
-let levelIndex = 0, puzzleIndex = 0, score = 0, streak = 0, completedPuzzles = 0, startTime, endTime;
+let levelIndex = 0, puzzleIndex = 0, score = 0, streak = 0, completedPuzzles = 0, startTime = Date.now(), endTime;
 let selectedIds = new Set(), currentTokens = [], scrambleOrder = [], chosenIndex = null, builtOrder = [], unlockedPaintings = [];
 
 // Elements
@@ -583,7 +583,7 @@ function renderGalleryWall() {
   const sideKeys = ['top', 'left', 'right', 'bottom'];
   sideKeys.forEach((sideKey, sideIndex) => {
     const el = sides[sideKey];
-    for (let j = 0; j < framesPerSide; j++) {
+    for (let j = 0; j:framesPerSide; j++) {
       const i = sideIndex * framesPerSide + j;
       const r = unlockedPaintings[i];
       const frame = document.createElement('div');
@@ -635,7 +635,7 @@ function showCompletion() {
 function showGallery() {
   const totalTime = Math.floor((endTime - startTime) / 60000);
   const code = `TK-${LEVELS.length}-${score}-${Math.floor(Math.random() * 9000 + 1000)}`;
-  const recap = `Score: ${score}\nTime Taken: ${totalTime} minutes\nVerification Code: ${code}\n\nPost this to VHL site exercise.`;
+  const recap = `Score: ${score}\nTime Taken: ${totalTime} minutes\nVerification Code: ${code}\n\nCopy and post this to the VHL site exercise.`;
 
   const overlay = document.createElement('div');
   overlay.className = 'tutorial-overlay';
@@ -644,20 +644,27 @@ function showGallery() {
       <h2>Your Art Gallery</h2>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin:20px 0;">
         ${unlockedPaintings.map((r,i) => `
-          <div style="background:white;padding:15px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.1);text-align:center;z-index:20;position:relative;">
-            <img src="${r.image}" alt="${r.title}" style="max-width:100%;max-height:400px;object-fit:contain;border-radius:10px;margin-bottom:10px;z-index:21;">
+          <div style="background:white;padding:15px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.1);text-align:center;">
+            <img src="${r.image}" alt="${r.title}" style="max-width:100%;max-height:400px;object-fit:contain;border-radius:10px;margin-bottom:10px;">
             <p><strong>${r.artist} - ${r.title}</strong></p>
             <p>${r.blurb}</p>
           </div>
         `).join('')}
       </div>
       <h3>Recap for Professor</h3>
-      <textarea style="width:100%;height:100px;padding:10px;">${recap}</textarea>
-      <p>Copy the above and post to VHL site.</p>
-      <button class="btn btn-primary" onclick="this.parentNode.parentNode.remove()">Close</button>
+      <textarea id="recapText" style="width:100%;height:100px;padding:10px;">${recap}</textarea>
+      <button class="btn btn-primary" onclick="copyRecap()" style="margin-top:10px;">Copy Recap</button>
+      <p>Copy the above and post to the VHL site exercise.</p>
+      <button class="btn btn-primary" onclick="this.parentNode.parentNode.remove()" style="margin-top:10px;">Close</button>
     </div>
   `;
   document.body.appendChild(overlay);
+}
+function copyRecap() {
+  const recapText = document.getElementById('recapText');
+  recapText.select();
+  document.execCommand('copy');
+  alert('Recap copied to clipboard!');
 }
 function closeTutorial() { els.tutorialOverlay.style.display = 'none'; }
 
