@@ -1,14 +1,8 @@
-<!-- Version 1.07 - Grammar Gallery -->
-<!-- Changes: -->
-<!-- 1. Fixed subject identification (Level 2): -->
-<!--    - "Running quickly, the children laugh." now accepts "children" AND "the children" -->
-<!--    - Changed sentence to "The book is mine." (removed "on the table") -->
-<!--    - Accepts "book" AND "the book" as subject -->
-<!-- 2. Possession fixes (Level 9): -->
-<!--    - Changed "la casa de madre" to "la casa de Mamá" -->
-<!--    - Fixed "los coche de amigos" to "la universidad de Monmouth" (correct grammar) -->
-<!-- 3. Fixed "Skip (Bug?)" button: now properly moves to next puzzle/level -->
-<!-- 4. All other features unchanged -->
+<!-- Version 1.08 - Grammar Gallery -->
+<!-- Fixes: -->
+<!-- 1. Fixed "Next →" button: now correctly advances to reward/completion after last puzzle -->
+<!-- 2. Possession puzzle (Level 9): changed "de comedor" to "del comedor" (correct contraction: de + el = del) -->
+<!-- 3. All other features (subject acceptance, gallery, skip button, etc.) unchanged -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -218,7 +212,7 @@ body {
 </div>
 
 <script>
-// Version 1.07 - Grammar Gallery
+// Version 1.08 - Grammar Gallery
 
 // Game Data
 const LEVELS = [
@@ -265,7 +259,7 @@ const LEVELS = [
   ]},
   {id:9, concept:"🚫 Possession Practice (Harder!)", mission:"Rewrite possessive phrases with 'de'.", bridge:"Spanish never uses apostrophe-s. Practice the pattern.", colorClass:"", puzzles:[
     {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"The teacher's desk →", options:["the desk of the teacher","the teacher's desk","the teachers desk"], answerIndex:0, explain:"'the desk of the teacher' → el escritorio del profesor."},
-    {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "la (the)", "casa (house)", "mamá (mom)"], answers:[["la (the)", "casa (house)", "de (of)", "mamá (mom)"]], explain:"Spanish: la casa de mamá (Mom's house)."},
+    {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "la (the)", "mesa (table)", "comedor (dining room)"], answers:[["la (the)", "mesa (table)", "del (of the)", "comedor (dining room)"]], explain:"Spanish: la mesa del comedor (the dining room table)."},
     {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"The children's books →", options:["the books of the children","the childrens books","the childrens' books"], answerIndex:0, explain:"'the books of the children' → los libros de los niños."},
     {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "Monmouth (Monmouth)", "la (the)", "universidad (university)"], answers:[["la (the)", "universidad (university)", "de (of)", "Monmouth (Monmouth)"]], explain:"Spanish: la universidad de Monmouth (Monmouth University)."}
   ]}
