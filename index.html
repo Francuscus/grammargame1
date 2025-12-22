@@ -201,7 +201,7 @@ body {
 </div>
 
 <script>
-// Version 1.11 - Grammar Gallery
+// Version 1.12 - Grammar Gallery
 
 // Game Data
 const LEVELS = [
@@ -538,7 +538,7 @@ function next() {
     renderPuzzle();
     hideFeedback();
   } else {
-    // Level complete → show reward or completion
+    // Level complete → show reward
     const reward = REWARDS[levelIndex];
     unlockedPaintings.push(reward);
     showReward(levelIndex + 1, reward);
