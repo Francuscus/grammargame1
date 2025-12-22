@@ -1,10 +1,8 @@
-<!-- Version 1.01 - Grammar Gallery -->
-<!-- Changes: -->
-<!-- 1. Fixed "Let's Go!" button (now closes tutorial reliably) -->
-<!-- 2. Changed title and text from "Toolkit" to "Grammar Gallery" -->
-<!-- 3. Gallery wall only left/right, 130px thumbnails, no overlap -->
-<!-- 4. Adjective puzzle accepts both "red" and "fast" -->
-<!-- 5. All images load with correct filenames -->
+<!-- Version 1.02 - Grammar Gallery -->
+<!-- Fixes: -->
+<!-- 1. "Let's Go!" button works reliably -->
+<!-- 2. Multiple-choice (mc) and fix puzzles no longer duplicate choices when selecting -->
+<!-- 3. All other features (gallery wall left/right, larger thumbnails, etc.) unchanged -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -214,7 +212,7 @@ body {
 </div>
 
 <script>
-// Version 1.01 - Grammar Gallery
+// Version 1.02 - Grammar Gallery
 
 // Game Data
 const LEVELS = [
@@ -408,6 +406,7 @@ function updateWordButtons() {
   });
 }
 function renderMultipleChoice(p) {
+  els.choices.innerHTML = ''; // Clear previous choices
   els.sentenceDisplay.textContent = p.stem;
   p.options.forEach((opt,i) => {
     const btn = document.createElement('button');
@@ -423,6 +422,7 @@ function renderMultipleChoice(p) {
   });
 }
 function renderFix(p) {
+  els.choices.innerHTML = ''; // Clear previous choices
   els.sentenceDisplay.textContent = p.sentence;
   p.choices.forEach((opt,i) => {
     const btn = document.createElement('button');
