@@ -1,8 +1,11 @@
-<!-- Version 1.02 - Grammar Gallery -->
+<!-- Version 1.03 - Grammar Gallery -->
 <!-- Fixes: -->
-<!-- 1. "Let's Go!" button works reliably -->
-<!-- 2. Multiple-choice (mc) and fix puzzles no longer duplicate choices when selecting -->
-<!-- 3. All other features (gallery wall left/right, larger thumbnails, etc.) unchanged -->
+<!-- 1. Multiple-choice (mc) and fix puzzles NO LONGER duplicate when selecting an answer -->
+<!-- 2. Added more subject identification exercises (Level 2 now has 5 puzzles) -->
+<!-- 3. Added more tag questions (Level 3 now has 6 puzzles) -->
+<!-- 4. Added a new Level 9: Possession (more possessive questions) -->
+<!-- 5. "Let's Go!" button works reliably -->
+<!-- 6. All images load with correct filenames -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -212,7 +215,7 @@ body {
 </div>
 
 <script>
-// Version 1.02 - Grammar Gallery
+// Version 1.03 - Grammar Gallery
 
 // Game Data
 const LEVELS = [
@@ -224,11 +227,17 @@ const LEVELS = [
   {id:2, concept:"👤 Find the SUBJECT", mission:"Click the subject.", bridge:"Spanish often drops the subject.", colorClass:"subject", puzzles:[
     {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"The happy student studies Spanish.", accept:[["student"], ["the","happy","student"]], explain:"Core subject = 'student'."},
     {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"In the library, my friends read quietly.", accept:[["friends"], ["my","friends"]], explain:"Subject = 'my friends'."},
-    {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"Maria and Luis practice every day.", accept:[["maria","and","luis"]], explain:"Compound subject."}
+    {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"Maria and Luis practice every day.", accept:[["maria","and","luis"]], explain:"Compound subject."},
+    {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"Running quickly, the children laugh.", accept:[["children"]], explain:"'children' is the subject."},
+    {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"The book on the table is mine.", accept:[["book"]], explain:"'book' is the subject."}
   ]},
   {id:3, concept:"🏷️ Tag Questions → Pronouns", mission:"Choose the correct tag.", bridge:"Tag questions reveal pronouns.", colorClass:"", puzzles:[
     {type:"mc", prompt:"Choose tag:", stem:"Natalie is a student, _____?", options:["isn't she","aren't they","doesn't she"], answerIndex:0, explain:"Natalie → she."},
-    {type:"mc", prompt:"Choose tag:", stem:"The store closes at eight, _____?", options:["doesn't it","isn't it","don't they"], answerIndex:0, explain:"Store → it."}
+    {type:"mc", prompt:"Choose tag:", stem:"The store closes at eight, _____?", options:["doesn't it","isn't it","don't they"], answerIndex:0, explain:"Store → it."},
+    {type:"mc", prompt:"Choose tag:", stem:"You are coming to class, _____?", options:["aren't you","isn't it","don't you"], answerIndex:0, explain:"You → you. 'are' → aren't you."},
+    {type:"mc", prompt:"Choose tag:", stem:"They don't like homework, _____?", options:["do they","don't they","are they"], answerIndex:0, explain:"They → they. Negative → do they."},
+    {type:"mc", prompt:"Choose tag:", stem:"We are late, _____?", options:["aren't we","isn't it","don't we"], answerIndex:0, explain:"We → we. 'are' → aren't we."},
+    {type:"mc", prompt:"Choose tag:", stem:"She likes coffee, _____?", options:["doesn't she","does she","isn't she"], answerIndex:0, explain:"She → she. Positive → doesn't she."}
   ]},
   {id:4, concept:"🔄 Replace with Pronouns", mission:"Swap nouns for pronouns.", bridge:"Spanish drops pronouns.", colorClass:"", puzzles:[
     {type:"mc", prompt:"Replace subject:", stem:"John studies Spanish. → _____ studies Spanish.", options:["He","She","It","They"], answerIndex:0, explain:"John → He."},
@@ -250,6 +259,12 @@ const LEVELS = [
     {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"John's book →", options:["the book of John","the John's book","Johns book"], answerIndex:0, explain:"'the book of John' matches Spanish logic."},
     {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "Juan (John)", "libro (book)", "el (the)"], answers:[["el (the)", "libro (book)", "de (of)", "juan (john)"]], explain:"Spanish: el libro de Juan (the book of John)."},
     {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"Lisa's car →", options:["the car of Lisa","Lisas car","the Lisa car"], answerIndex:0, explain:"'the car of Lisa' → Spanish: el coche de Lisa."}
+  ]},
+  {id:9, concept:"🚫 Possession Practice (Harder!)", mission:"Rewrite possessive phrases with 'de'.", bridge:"Spanish never uses apostrophe-s. Practice the pattern.", colorClass:"", puzzles:[
+    {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"The teacher's desk →", options:["the desk of the teacher","the teacher's desk","the teachers desk"], answerIndex:0, explain:"'the desk of the teacher' → el escritorio del profesor."},
+    {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "la (the)", "casa (house)", "madre (mother)"], answers:[["la (the)", "casa (house)", "de (of)", "madre (mother)"]], explain:"Spanish: la casa de la madre (the mother's house)."},
+    {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"The children's books →", options:["the books of the children","the childrens books","the childrens' books"], answerIndex:0, explain:"'the books of the children' → los libros de los niños."},
+    {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "los (the)", "amigos (friends)", "coche (car)"], answers:[["el (the)", "coche (car)", "de (of)", "los (the)", "amigos (friends)"]], explain:"Spanish: el coche de los amigos (the friends' car)."}
   ]}
 ];
 const TOTAL_PUZZLES = LEVELS.reduce((sum, l) => sum + l.puzzles.length, 0);
@@ -406,7 +421,7 @@ function updateWordButtons() {
   });
 }
 function renderMultipleChoice(p) {
-  els.choices.innerHTML = ''; // Clear previous choices
+  els.choices.innerHTML = ''; // Always clear first
   els.sentenceDisplay.textContent = p.stem;
   p.options.forEach((opt,i) => {
     const btn = document.createElement('button');
@@ -422,7 +437,7 @@ function renderMultipleChoice(p) {
   });
 }
 function renderFix(p) {
-  els.choices.innerHTML = ''; // Clear previous choices
+  els.choices.innerHTML = ''; // Always clear first
   els.sentenceDisplay.textContent = p.sentence;
   p.choices.forEach((opt,i) => {
     const btn = document.createElement('button');
