@@ -1,9 +1,17 @@
+<!-- Version 1.01 - Grammar Gallery -->
+<!-- Changes: -->
+<!-- 1. Fixed "Let's Go!" button (now closes tutorial reliably) -->
+<!-- 2. Changed title and text from "Toolkit" to "Grammar Gallery" -->
+<!-- 3. Gallery wall only left/right, 130px thumbnails, no overlap -->
+<!-- 4. Adjective puzzle accepts both "red" and "fast" -->
+<!-- 5. All images load with correct filenames -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spanish Reading Toolkit</title>
+<title>Grammar Gallery</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -26,7 +34,7 @@ body {
   position: relative;
   z-index: 10;
 }
-/* Gallery Wall - Only left and right, larger thumbnails */
+/* Gallery Wall - Only left and right */
 .gallery-wall {
   position: absolute;
   top: 0; left: -20px; right: -20px; bottom: 0;
@@ -40,7 +48,7 @@ body {
 .wall-left { left: 0; }
 .wall-right { right: 0; }
 .frame {
-  width: 130px; height: 130px; /* 30% larger */
+  width: 130px; height: 130px;
   background: #fff; border: 4px solid #764ba2; border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   overflow: hidden; cursor: pointer; pointer-events: auto;
@@ -195,18 +203,20 @@ body {
 <!-- Tutorial overlay -->
 <div class="tutorial-overlay" id="tutorialOverlay">
   <div class="tutorial-box">
-    <h2>🛠️ Welcome to Your Toolkit!</h2>
+    <h2>🛠️ Welcome to Grammar Gallery!</h2>
     <p><strong>Your Mission:</strong> Train your brain to spot grammar patterns FAST—the superpower you need for reading Spanish.</p>
     <p>📝 <strong>How it works:</strong> Click words in the scrambled Word Bank to select them. Click again to deselect.</p>
     <p>🎯 <strong>Why scrambled?</strong> So you focus on MEANING, not position—just like real reading!</p>
     <p>🔥 <strong>Build streaks</strong> for bonus points. Get 3+ correct in a row to activate multipliers!</p>
-    <p>Ready to unlock your Spanish reading toolkit?</p>
-    <button class="btn btn-primary" onclick="closeTutorial()">Let's Go! 🚀</button>
+    <p>Ready to unlock your Spanish grammar gallery?</p>
+    <button class="btn btn-primary" id="startBtn">Let's Go! 🚀</button>
   </div>
 </div>
 
 <script>
-// Game Data (all levels included)
+// Version 1.01 - Grammar Gallery
+
+// Game Data
 const LEVELS = [
   {id:1, concept:"🔍 Find the VERB", mission:"Click the verb.", bridge:"Spanish verbs pack WHO + WHEN.", colorClass:"verb", puzzles:[
     {type:"selectWords", prompt:"Select the VERB.", sentence:"She studies Spanish at night.", accept:[["studies"]], explain:"'studies' is the action."},
@@ -584,13 +594,13 @@ function renderGalleryWall() {
 }
 function showCompletion() {
   const totalTime = Math.floor((endTime - startTime) / 60000);
-  const code = `TK-${LEVELS.length}-${score}-${Math.floor(Math.random() * 9000 + 1000)}`;
+  const code = `GG-${LEVELS.length}-${score}-${Math.floor(Math.random() * 9000 + 1000)}`;
 
   els.gameContainer.innerHTML = `
     <div class="completion-screen">
       <div class="trophy">🏆</div>
-      <h2>Toolkit Complete!</h2>
-      <p style="font-size:20px;color:#495057;margin-bottom:30px;">You've unlocked your Spanish Reading Toolkit!</p>
+      <h2>Grammar Gallery Complete!</h2>
+      <p style="font-size:20px;color:#495057;margin-bottom:30px;">You've unlocked your Grammar Gallery!</p>
       <div class="completion-stats">
         <p>⭐ Final Score: <strong>${score}</strong></p>
         <p>🔥 Best Streak: <strong>${Math.max(streak,0)}</strong></p>
@@ -617,14 +627,14 @@ function showCompletion() {
 }
 function showGallery() {
   const totalTime = Math.floor((endTime - startTime) / 60000);
-  const code = `TK-${LEVELS.length}-${score}-${Math.floor(Math.random() * 9000 + 1000)}`;
+  const code = `GG-${LEVELS.length}-${score}-${Math.floor(Math.random() * 9000 + 1000)}`;
   const recap = `Score: ${score}\nTime Taken: ${totalTime} minutes\nVerification Code: ${code}\n\nCopy and post this to the VHL site exercise.`;
 
   const overlay = document.createElement('div');
   overlay.className = 'tutorial-overlay';
   overlay.innerHTML = `
     <div class="tutorial-box gallery-box">
-      <h2>Your Art Gallery</h2>
+      <h2>Your Grammar Gallery</h2>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin:20px 0;">
         ${unlockedPaintings.map((r,i) => `
           <div style="background:white;padding:15px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.1);text-align:center;">
@@ -650,7 +660,7 @@ function copyRecap() {
   alert('Recap copied to clipboard!');
 }
 function closeTutorial() {
-  els.tutorialOverlay.style.display = 'none';
+  document.getElementById('tutorialOverlay').style.display = 'none';
 }
 
 // Event Listeners
@@ -659,6 +669,7 @@ els.nextBtn.onclick = next;
 els.resetBtn.onclick = reset;
 els.hintBtn.onclick = showHint;
 els.skipBtn.onclick = skip;
+document.getElementById('startBtn').onclick = closeTutorial;
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter') {
     if (!els.nextBtn.disabled) next();
