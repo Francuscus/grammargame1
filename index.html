@@ -1,11 +1,12 @@
-<!-- Version 1.04 - Grammar Gallery -->
+<!-- Version 1.06 - Grammar Gallery -->
 <!-- Changes: -->
-<!-- 1. Fixed adjective puzzle (Level 7): -->
-<!--    - Sentence changed to "The white cat walks quickly" (only one adjective: "white") -->
-<!--    - Accept only "white" as adjective -->
-<!--    - Reorder puzzle updated to "el gato blanco" (article + noun + adjective) -->
-<!-- 2. Multiple-choice duplication fixed (already in 1.03) -->
-<!-- 3. All other features (gallery, more subject/tag/possession questions) unchanged -->
+<!-- 1. Fixed subject identification puzzles (Level 2): -->
+<!--    - "Running quickly, the children laugh." now accepts "children" and "the children" -->
+<!--    - "The book on the table is mine." now accepts "book" and "the book" -->
+<!-- 2. Fixed possession puzzles (Level 9): -->
+<!--    - Changed "la casa de madre" to "la mesa del comedor" (more natural) -->
+<!--    - Changed "los coche de amigos" to "la universidad de Monmouth" (correct and meaningful) -->
+<!-- 3. All other features unchanged -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -215,7 +216,7 @@ body {
 </div>
 
 <script>
-// Version 1.04 - Grammar Gallery
+// Version 1.06 - Grammar Gallery
 
 // Game Data
 const LEVELS = [
@@ -225,11 +226,11 @@ const LEVELS = [
     {type:"selectWords", prompt:"Select the VERB (linking).", sentence:"They are ready for the exam.", accept:[["are"]], explain:"'are' links subject to description."}
   ]},
   {id:2, concept:"👤 Find the SUBJECT", mission:"Click the subject.", bridge:"Spanish often drops the subject.", colorClass:"subject", puzzles:[
-    {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"The happy student studies Spanish.", accept:[["student"], ["the","happy","student"]], explain:"Core subject = 'student'."},
+    {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"The happy student studies Spanish.", accept:[["student"], ["the","happy","student"]], explain:"Core subject = 'student'. Full phrase = 'the happy student'."},
     {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"In the library, my friends read quietly.", accept:[["friends"], ["my","friends"]], explain:"Subject = 'my friends'."},
     {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"Maria and Luis practice every day.", accept:[["maria","and","luis"]], explain:"Compound subject."},
-    {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"Running quickly, the children laugh.", accept:[["children"]], explain:"'children' is the subject."},
-    {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"The book on the table is mine.", accept:[["book"]], explain:"'book' is the subject."}
+    {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"Running quickly, the children laugh.", accept:[["children"], ["the","children"]], explain:"'children' or 'the children' is the subject."},
+    {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"The book on the table is mine.", accept:[["book"], ["the","book"]], explain:"'book' or 'the book' is the subject. 'on the table' is a prepositional phrase."}
   ]},
   {id:3, concept:"🏷️ Tag Questions → Pronouns", mission:"Choose the correct tag.", bridge:"Tag questions reveal pronouns.", colorClass:"", puzzles:[
     {type:"mc", prompt:"Choose tag:", stem:"Natalie is a student, _____?", options:["isn't she","aren't they","doesn't she"], answerIndex:0, explain:"Natalie → she."},
@@ -262,9 +263,9 @@ const LEVELS = [
   ]},
   {id:9, concept:"🚫 Possession Practice (Harder!)", mission:"Rewrite possessive phrases with 'de'.", bridge:"Spanish never uses apostrophe-s. Practice the pattern.", colorClass:"", puzzles:[
     {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"The teacher's desk →", options:["the desk of the teacher","the teacher's desk","the teachers desk"], answerIndex:0, explain:"'the desk of the teacher' → el escritorio del profesor."},
-    {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "la (the)", "casa (house)", "madre (mother)"], answers:[["la (the)", "casa (house)", "de (of)", "madre (mother)"]], explain:"Spanish: la casa de la madre (the mother's house)."},
+    {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "la (the)", "mesa (table)", "comedor (dining room)"], answers:[["la (the)", "mesa (table)", "de (of)", "comedor (dining room)"]], explain:"Spanish: la mesa del comedor (the dining room table)."},
     {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"The children's books →", options:["the books of the children","the childrens books","the childrens' books"], answerIndex:0, explain:"'the books of the children' → los libros de los niños."},
-    {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "los (the)", "amigos (friends)", "coche (car)"], answers:[["el (the)", "coche (car)", "de (of)", "los (the)", "amigos (friends)"]], explain:"Spanish: el coche de los amigos (the friends' car)."}
+    {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "Monmouth (Monmouth)", "la (the)", "universidad (university)"], answers:[["la (the)", "universidad (university)", "de (of)", "Monmouth (Monmouth)"]], explain:"Spanish: la universidad de Monmouth (Monmouth University)."}
   ]}
 ];
 const TOTAL_PUZZLES = LEVELS.reduce((sum, l) => sum + l.puzzles.length, 0);
@@ -613,7 +614,7 @@ function showCompletion() {
 
   els.gameContainer.innerHTML = `
     <div class="completion-screen">
-    <div class="trophy">
+      <div class="trophy">
         <img src="SAgradafamilia.jpg" alt="Sagrada Familia" style="max-width: 100px; max-height: 100px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
       </div>
       <h2>Grammar Gallery Complete!</h2>
@@ -661,11 +662,11 @@ function showGallery() {
           </div>
         `).join('')}
       </div>
-      <h3>Recap for Professor</h3>
-      <textarea id="recapText" style="width:100%;height:100px;padding:10px;">${recap}</textarea>
+      <h3>Recap for Professor (Post to VHL)</h3>
+      <textarea id="recapText" style="width:100%;height:120px;padding:10px;font-family:monospace;">${recap}</textarea>
       <button class="btn btn-primary" onclick="copyRecap()" style="margin-top:10px;">Copy Recap</button>
-      <p>Copy the above and post to the VHL site exercise.</p>
-      <button class="btn btn-primary" onclick="this.parentNode.parentNode.remove()" style="margin-top:10px;">Close</button>
+      <p style="margin-top:10px;">Copy the text above and paste it into your VHL homework submission.</p>
+      <button class="btn btn-primary" onclick="this.parentNode.parentNode.remove()" style="margin-top:20px;">Close</button>
     </div>
   `;
   document.body.appendChild(overlay);
