@@ -130,7 +130,7 @@ body {
 .skills-unlocked h3 { color: #667eea; margin-bottom: 15px; }
 .skills-unlocked ul { list-style: none; text-align: left; }
 .skills-unlocked li { padding: 8px 0; font-size: 16px; }
-.skills-unlocked li::before { content: "✓ "; color: #28a745; font-weight: bold; margin-right: 8px; }
+.skills-unlocked li::before { content: "âœ“ "; color: #28a745; font-weight: bold; margin-right: 8px; }
 @keyframes slideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 .word-btn { animation: slideIn 0.3s ease-out; }
 .celebration { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 100px; z-index: 999; pointer-events: none; animation: celebrate 1s ease-out; }
@@ -162,12 +162,12 @@ body {
     <div class="mission-text" id="missionText">Click the verb to find the heartbeat of the sentence.</div>
   </div>
   <div class="stats-bar">
-    <div class="stat"><span>⭐</span><span class="stat-value" id="scoreValue">0</span></div>
+    <div class="stat"><span>â­</span><span class="stat-value" id="scoreValue">0</span></div>
     <div class="progress-bar-container">
       <div class="progress-bar" id="progressBar" style="width: 0%"></div>
       <div class="progress-text" id="progressText">0/22</div>
     </div>
-    <div class="stat"><span>🔥</span><span class="stat-value streak" id="streakValue">0</span></div>
+    <div class="stat"><span>ðŸ”¥</span><span class="stat-value streak" id="streakValue">0</span></div>
   </div>
   <div class="content" id="content">
     <div class="bridge" id="bridge"></div>
@@ -179,9 +179,9 @@ body {
     <div class="feedback hidden" id="feedback"></div>
     <div class="controls">
       <button class="btn btn-primary" id="checkBtn">Check Answer</button>
-      <button class="btn btn-success" id="nextBtn" disabled>Next →</button>
+      <button class="btn btn-success" id="nextBtn" disabled>Next â†’</button>
       <button class="btn btn-secondary" id="resetBtn">Reset</button>
-      <button class="btn btn-warning" id="hintBtn">💡 Hint</button>
+      <button class="btn btn-warning" id="hintBtn">ðŸ’¡ Hint</button>
       <button class="btn btn-danger" id="skipBtn">Skip</button>
     </div>
   </div>
@@ -190,13 +190,13 @@ body {
 <!-- Tutorial overlay -->
 <div class="tutorial-overlay" id="tutorialOverlay">
   <div class="tutorial-box">
-    <h2>🛠️ Welcome to Grammar Gallery!</h2>
-    <p><strong>Your Mission:</strong> Train your brain to spot grammar patterns FAST—the superpower you need for reading Spanish.</p>
-    <p>📝 <strong>How it works:</strong> Click words in the scrambled Word Bank to select them. Click again to deselect.</p>
-    <p>🎯 <strong>Why scrambled?</strong> So you focus on MEANING, not position—just like real reading!</p>
-    <p>🔥 <strong>Build streaks</strong> for bonus points. Get 3+ correct in a row to activate multipliers!</p>
+    <h2>ðŸ› ï¸ Welcome to Grammar Gallery!</h2>
+    <p><strong>Your Mission:</strong> Train your brain to spot grammar patterns FASTâ€”the superpower you need for reading Spanish.</p>
+    <p>ðŸ“ <strong>How it works:</strong> Click words in the scrambled Word Bank to select them. Click again to deselect.</p>
+    <p>ðŸŽ¯ <strong>Why scrambled?</strong> So you focus on MEANING, not positionâ€”just like real reading!</p>
+    <p>ðŸ”¥ <strong>Build streaks</strong> for bonus points. Get 3+ correct in a row to activate multipliers!</p>
     <p>Ready to unlock your Spanish grammar gallery?</p>
-    <button class="btn btn-primary" id="startBtn">Let's Go! 🚀</button>
+    <button class="btn btn-primary" id="startBtn">Let's Go! ðŸš€</button>
   </div>
 </div>
 
@@ -205,61 +205,61 @@ body {
 
 // Game Data
 const LEVELS = [
-  {id:1, concept:"🔍 Find the VERB", mission:"Click the verb.", bridge:"Spanish verbs pack WHO + WHEN.", colorClass:"verb", puzzles:[
+  {id:1, concept:"ðŸ” Find the VERB", mission:"Click the verb.", bridge:"Spanish verbs pack WHO + WHEN.", colorClass:"verb", puzzles:[
     {type:"selectWords", prompt:"Select the VERB.", sentence:"She studies Spanish at night.", accept:[["studies"]], explain:"'studies' is the action."},
     {type:"selectWords", prompt:"Select the VERB.", sentence:"The store closes at eight.", accept:[["closes"]], explain:"'closes' is what the store does."},
     {type:"selectWords", prompt:"Select the VERB (linking).", sentence:"They are ready for the exam.", accept:[["are"]], explain:"'are' links subject to description."}
   ]},
-  {id:2, concept:"👤 Find the SUBJECT", mission:"Click the subject.", bridge:"Spanish often drops the subject.", colorClass:"subject", puzzles:[
+  {id:2, concept:"ðŸ‘¤ Find the SUBJECT", mission:"Click the subject.", bridge:"Spanish often drops the subject.", colorClass:"subject", puzzles:[
     {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"The happy student studies Spanish.", accept:[["student"], ["the","happy","student"]], explain:"Core subject = 'student'. Full phrase = 'the happy student'."},
     {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"In the library, my friends read quietly.", accept:[["friends"], ["my","friends"]], explain:"Subject = 'my friends'."},
     {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"Maria and Luis practice every day.", accept:[["maria","and","luis"]], explain:"Compound subject."},
     {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"Running quickly, the children laugh.", accept:[["children"], ["the","children"]], explain:"'children' or 'the children' is the subject."},
     {type:"selectWords", prompt:"Select the SUBJECT.", sentence:"The book is mine.", accept:[["book"], ["the","book"]], explain:"'book' or 'the book' is the subject."}
   ]},
-  {id:3, concept:"🏷️ Tag Questions → Pronouns", mission:"Choose the correct tag.", bridge:"Tag questions reveal pronouns.", colorClass:"", puzzles:[
-    {type:"mc", prompt:"Choose tag:", stem:"Natalie is a student, _____?", options:["isn't she","aren't they","doesn't she"], answerIndex:0, explain:"Natalie → she."},
-    {type:"mc", prompt:"Choose tag:", stem:"The store closes at eight, _____?", options:["doesn't it","isn't it","don't they"], answerIndex:0, explain:"Store → it."},
-    {type:"mc", prompt:"Choose tag:", stem:"You are coming to class, _____?", options:["aren't you","isn't it","don't you"], answerIndex:0, explain:"You → you. 'are' → aren't you."},
-    {type:"mc", prompt:"Choose tag:", stem:"They don't like homework, _____?", options:["do they","don't they","are they"], answerIndex:0, explain:"They → they. Negative → do they."},
-    {type:"mc", prompt:"Choose tag:", stem:"We are late, _____?", options:["aren't we","isn't it","don't we"], answerIndex:0, explain:"We → we. 'are' → aren't we."},
-    {type:"mc", prompt:"Choose tag:", stem:"She likes coffee, _____?", options:["doesn't she","does she","isn't she"], answerIndex:0, explain:"She → she. Positive → doesn't she."}
+  {id:3, concept:"ðŸ·ï¸ Tag Questions â†’ Pronouns", mission:"Choose the correct tag.", bridge:"Tag questions reveal pronouns.", colorClass:"", puzzles:[
+    {type:"mc", prompt:"Choose tag:", stem:"Natalie is a student, _____?", options:["isn't she","aren't they","doesn't she"], answerIndex:0, explain:"Natalie â†’ she."},
+    {type:"mc", prompt:"Choose tag:", stem:"The store closes at eight, _____?", options:["doesn't it","isn't it","don't they"], answerIndex:0, explain:"Store â†’ it."},
+    {type:"mc", prompt:"Choose tag:", stem:"You are coming to class, _____?", options:["aren't you","isn't it","don't you"], answerIndex:0, explain:"You â†’ you. 'are' â†’ aren't you."},
+    {type:"mc", prompt:"Choose tag:", stem:"They don't like homework, _____?", options:["do they","don't they","are they"], answerIndex:0, explain:"They â†’ they. Negative â†’ do they."},
+    {type:"mc", prompt:"Choose tag:", stem:"We are late, _____?", options:["aren't we","isn't it","don't we"], answerIndex:0, explain:"We â†’ we. 'are' â†’ aren't we."},
+    {type:"mc", prompt:"Choose tag:", stem:"She likes coffee, _____?", options:["doesn't she","does she","isn't she"], answerIndex:0, explain:"She â†’ she. Positive â†’ doesn't she."}
   ]},
-  {id:4, concept:"🔄 Replace with Pronouns", mission:"Swap nouns for pronouns.", bridge:"Spanish drops pronouns.", colorClass:"", puzzles:[
-    {type:"mc", prompt:"Replace subject:", stem:"John studies Spanish. → _____ studies Spanish.", options:["He","She","It","They"], answerIndex:0, explain:"John → He."},
-    {type:"mc", prompt:"Replace subject:", stem:"Maria and Luis practice. → _____ practice.", options:["They","We","She","He"], answerIndex:0, explain:"Two people → They."}
+  {id:4, concept:"ðŸ”„ Replace with Pronouns", mission:"Swap nouns for pronouns.", bridge:"Spanish drops pronouns.", colorClass:"", puzzles:[
+    {type:"mc", prompt:"Replace subject:", stem:"John studies Spanish. â†’ _____ studies Spanish.", options:["He","She","It","They"], answerIndex:0, explain:"John â†’ He."},
+    {type:"mc", prompt:"Replace subject:", stem:"Maria and Luis practice. â†’ _____ practice.", options:["They","We","She","He"], answerIndex:0, explain:"Two people â†’ They."}
   ]},
-  {id:5, concept:"⚖️ Subject-Verb Agreement", mission:"Fix agreement error.", bridge:"Spanish agreement is strict.", colorClass:"", puzzles:[
-    {type:"fix", prompt:"Fix agreement:", sentence:"The students studies Spanish.", choices:["study","studies"], answerIndex:0, explain:"Plural → 'study'."},
-    {type:"fix", prompt:"Fix agreement:", sentence:"He walk to class every day.", choices:["walk","walks"], answerIndex:1, explain:"Singular → 'walks'."}
+  {id:5, concept:"âš–ï¸ Subject-Verb Agreement", mission:"Fix agreement error.", bridge:"Spanish agreement is strict.", colorClass:"", puzzles:[
+    {type:"fix", prompt:"Fix agreement:", sentence:"The students studies Spanish.", choices:["study","studies"], answerIndex:0, explain:"Plural â†’ 'study'."},
+    {type:"fix", prompt:"Fix agreement:", sentence:"He walk to class every day.", choices:["walk","walks"], answerIndex:1, explain:"Singular â†’ 'walks'."}
   ]},
-  {id:6, concept:"⏰ Verb Tense Matching", mission:"Fix tense mismatch.", bridge:"Spanish encodes time in verb.", colorClass:"", puzzles:[
-    {type:"fix", prompt:"Fix tense:", sentence:"Yesterday, she walks to class.", choices:["walked","walks"], answerIndex:0, explain:"Past → 'walked'."},
-    {type:"fix", prompt:"Fix tense:", sentence:"Tomorrow, we practiced.", choices:["will practice","practiced"], answerIndex:0, explain:"Future → 'will practice'."}
+  {id:6, concept:"â° Verb Tense Matching", mission:"Fix tense mismatch.", bridge:"Spanish encodes time in verb.", colorClass:"", puzzles:[
+    {type:"fix", prompt:"Fix tense:", sentence:"Yesterday, she walks to class.", choices:["walked","walks"], answerIndex:0, explain:"Past â†’ 'walked'."},
+    {type:"fix", prompt:"Fix tense:", sentence:"Tomorrow, we practiced.", choices:["will practice","practiced"], answerIndex:0, explain:"Future â†’ 'will practice'."}
   ]},
-  {id:7, concept:"🎨 Adjectives + Spanish Order", mission:"Find adjectives, use noun + adj.", bridge:"Spanish: noun before adjective.", colorClass:"adjective", puzzles:[
+  {id:7, concept:"ðŸŽ¨ Adjectives + Spanish Order", mission:"Find adjectives, use noun + adj.", bridge:"Spanish: noun before adjective.", colorClass:"adjective", puzzles:[
     {type:"selectWords", prompt:"Select the ADJECTIVE that describes the cat.", sentence:"The white cat walks quickly.", accept:[["white"]], explain:"'white' is the adjective describing the cat."},
     {type:"reorder", prompt:"Build in Spanish order (article + noun + adjective):", bank:["blanco (white)", "gato (cat)", "el (the)"], answers:[["el (the)", "gato (cat)", "blanco (white)"]], explain:"Spanish: el gato blanco (the white cat). Noun comes before adjective!"}
   ]},
-  {id:8, concept:"🚫 Possession: NO Apostrophe-S!", mission:"Rewrite using 'of' instead of apostrophe-s.", bridge:"Spanish uses 'de' (of), never apostrophe-s.", colorClass:"", puzzles:[
-    {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"John's book →", options:["the book of John","the John's book","Johns book"], answerIndex:0, explain:"'the book of John' matches Spanish logic."},
+  {id:8, concept:"ðŸš« Possession: NO Apostrophe-S!", mission:"Rewrite using 'of' instead of apostrophe-s.", bridge:"Spanish uses 'de' (of), never apostrophe-s.", colorClass:"", puzzles:[
+    {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"John's book â†’", options:["the book of John","the John's book","Johns book"], answerIndex:0, explain:"'the book of John' matches Spanish logic."},
     {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "Juan (John)", "libro (book)", "el (the)"], answers:[["el (the)", "libro (book)", "de (of)", "juan (john)"]], explain:"Spanish: el libro de Juan (the book of John)."},
-    {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"Lisa's car →", options:["the car of Lisa","Lisas car","the Lisa car"], answerIndex:0, explain:"'the car of Lisa' → Spanish: el coche de Lisa."},
-    {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"The teacher's desk →", options:["the desk of the teacher","the teacher's desk","the teachers desk"], answerIndex:0, explain:"'the desk of the teacher' → el escritorio del profesor."},
+    {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"Lisa's car â†’", options:["the car of Lisa","Lisas car","the Lisa car"], answerIndex:0, explain:"'the car of Lisa' â†’ Spanish: el coche de Lisa."},
+    {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"The teacher's desk â†’", options:["the desk of the teacher","the teacher's desk","the teachers desk"], answerIndex:0, explain:"'the desk of the teacher' â†’ el escritorio del profesor."},
     {type:"reorder", prompt:"Build the Spanish phrase:", bank:["la (the)", "mesa (table)", "del (of the)", "comedor (dining room)"], answers:[["la (the)", "mesa (table)", "del (of the)", "comedor (dining room)"]], explain:"Spanish: la mesa del comedor (the dining room table)."},
-    {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"The children's books →", options:["the books of the children","the childrens books","the childrens' books"], answerIndex:0, explain:"'the books of the children' → los libros de los niños."},
+    {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"The children's books â†’", options:["the books of the children","the childrens books","the childrens' books"], answerIndex:0, explain:"'the books of the children' â†’ los libros de los niÃ±os."},
     {type:"reorder", prompt:"Build the Spanish phrase:", bank:["la (the)", "universidad (university)", "de (of)", "Monmouth (Monmouth)"], answers:[["la (the)", "universidad (university)", "de (of)", "Monmouth (Monmouth)"]], explain:"Spanish: la universidad de Monmouth (Monmouth University)."}
   ]}
 ];
 const TOTAL_PUZZLES = LEVELS.reduce((sum, l) => sum + l.puzzles.length, 0);
 
 const REWARDS = [
-  {image:'persistencia.jpg', artist:'Salvador Dalí', title:'The Persistence of Memory', blurb:'This iconic surrealist work depicts melting clocks in a barren landscape, symbolizing the fluidity of time. To tell real paintings from AI-generated ones, look for the artist\'s unique brushwork and subtle textures that come from physical paint application, which AI simulations often lack in authenticity.'},
+  {image:'persistencia.jpg', artist:'Salvador DalÃ­', title:'The Persistence of Memory', blurb:'This iconic surrealist work depicts melting clocks in a barren landscape, symbolizing the fluidity of time. To tell real paintings from AI-generated ones, look for the artist\'s unique brushwork and subtle textures that come from physical paint application, which AI simulations often lack in authenticity.'},
   {image:'goya.jpg', artist:'Francisco Goya', title:'Saturn Devouring His Son', blurb:'A dark and haunting depiction from Goya\'s Black Paintings series, showing the Titan Saturn consuming his child. Real artworks like this have provenance and material analysis that confirm authenticity, whereas AI-generated images may have digital artifacts or inconsistent anatomical details.'},
   {image:'ledesma.jpg', artist:'Clara Ledesma', title:'Untitled', blurb:'An abstract work by the Dominican artist, featuring vibrant colors and forms. To differentiate from AI, note the organic imperfections and personal style evolution in the artist\'s oeuvre, which AI struggles to mimic consistently.'},
-  {image:'elgreco.jpg', artist:'El Greco', title:'Portrait of Cardinal Fernando Niño de Guevara', blurb:'This Mannerist portrait captures the inquisitor with elongated figures and dramatic lighting. Authentic paintings show layers of paint and craquelure from age, unlike smooth, flawless AI outputs.'},
-  {image:'velazquez.jpg', artist:'Diego Velázquez', title:'Las Meninas', blurb:'A complex Baroque composition depicting the Spanish royal family and their attendants. Real vs. AI: Examine the masterful use of light and shadow, and the physical canvas texture visible in high-resolution scans.'},
-  {image:'diegorivera.jpg', artist:'Diego Rivera', title:'Sueño de una Tarde Dominical en la Alameda Central', blurb:'A mural depicting Mexican history and figures in a dreamlike park setting. To spot AI fakes, check for historical accuracy in details and the artist\'s signature style, as AI may introduce anachronisms or stylistic inconsistencies.'},
+  {image:'elgreco.jpg', artist:'El Greco', title:'Portrait of Cardinal Fernando NiÃ±o de Guevara', blurb:'This Mannerist portrait captures the inquisitor with elongated figures and dramatic lighting. Authentic paintings show layers of paint and craquelure from age, unlike smooth, flawless AI outputs.'},
+  {image:'velazquez.jpg', artist:'Diego VelÃ¡zquez', title:'Las Meninas', blurb:'A complex Baroque composition depicting the Spanish royal family and their attendants. Real vs. AI: Examine the masterful use of light and shadow, and the physical canvas texture visible in high-resolution scans.'},
+  {image:'diegorivera.jpg', artist:'Diego Rivera', title:'SueÃ±o de una Tarde Dominical en la Alameda Central', blurb:'A mural depicting Mexican history and figures in a dreamlike park setting. To spot AI fakes, check for historical accuracy in details and the artist\'s signature style, as AI may introduce anachronisms or stylistic inconsistencies.'},
   {image:'frida.jpg', artist:'Frida Kahlo', title:'Las Dos Fridas', blurb:'This self-portrait shows two versions of Frida connected by veins, symbolizing her heritage and pain. Real paintings have tangible evidence like X-rays showing underdrawings, which AI cannot replicate.'},
   {image:'wilfredolam.jpg', artist:'Wilfredo Lam', title:'La Jungla', blurb:'A Cubist-inspired work blending Afro-Cuban elements with jungle motifs. Distinguishing from AI: Look for the fusion of cultural influences that reflect the artist\'s life, often mishandled in AI generations due to lack of contextual understanding.'}
 ];
@@ -346,7 +346,7 @@ function showFeedback(msg, type) {
 }
 function hideFeedback() { els.feedback.classList.add('hidden'); }
 function celebrate() {
-  const emojis = ['🎉','✨','🌟','💫','🎊'];
+  const emojis = ['ðŸŽ‰','âœ¨','ðŸŒŸ','ðŸ’«','ðŸŽŠ'];
   const cel = document.createElement('div');
   cel.className = 'celebration';
   cel.textContent = emojis[Math.floor(Math.random()*5)];
@@ -507,19 +507,19 @@ function handleCorrect(explain) {
   const points = 5 + Math.min(streak, 10);
   score += points; streak++; completedPuzzles++;
   updateStats(); celebrate();
-  showFeedback(`✅ Correct! +${points} points ${explain}`, 'correct');
+  showFeedback(`âœ… Correct! +${points} points ${explain}`, 'correct');
   els.nextBtn.disabled = false;
 }
 function handleIncorrect(msg) {
   streak = 0; updateStats();
-  showFeedback(`❌ ${msg}`, 'incorrect');
+  showFeedback(`âŒ ${msg}`, 'incorrect');
 }
 
 // Controls
 function reset() { renderPuzzle(); }
-function showHint() { showFeedback(`💡 ${currentLevel().bridge}`, 'neutral'); }
+function showHint() { showFeedback(`ðŸ’¡ ${currentLevel().bridge}`, 'neutral'); }
 function skip() {
-  showFeedback('⏭️ Skipped. No points.', 'neutral');
+  showFeedback('â­ï¸ Skipped. No points.', 'neutral');
   streak = 0; completedPuzzles++;
   updateStats();
   if (puzzleIndex < currentLevel().puzzles.length - 1) {
@@ -536,7 +536,7 @@ function next() {
     renderPuzzle();
     hideFeedback();
   } else {
-    // Level complete → show reward
+    // Level complete â†’ show reward
     const reward = REWARDS[levelIndex];
     unlockedPaintings.push(reward);
     showReward(levelIndex + 1, reward);
@@ -547,7 +547,7 @@ function showReward(levelId, reward) {
   overlay.className = 'tutorial-overlay';
   overlay.innerHTML = `
     <div class="reward-box">
-      <h2>🎨 Level ${levelId} Reward!</h2>
+      <h2>ðŸŽ¨ Level ${levelId} Reward!</h2>
       <img src="${reward.image}" alt="${reward.title}" class="reward-img">
       <p><strong>${reward.artist} - ${reward.title}</strong></p>
       <p>${reward.blurb}</p>
@@ -611,25 +611,25 @@ function showCompletion() {
       <h2>Grammar Gallery Complete!</h2>
       <p style="font-size:20px;color:#495057;margin-bottom:30px;">You've unlocked your Grammar Gallery!</p>
       <div class="completion-stats">
-        <p>⭐ Final Score: <strong>${score}</strong></p>
-        <p>🔥 Best Streak: <strong>${Math.max(streak,0)}</strong></p>
-        <p>📊 Puzzles Completed: <strong>${TOTAL_PUZZLES}/${TOTAL_PUZZLES}</strong></p>
-        <p>⏱️ Time Taken: <strong>${totalTime} minutes</strong></p>
-        <p>🎯 Verification Code: <strong>${code}</strong></p>
+        <p>â­ Final Score: <strong>${score}</strong></p>
+        <p>ðŸ”¥ Best Streak: <strong>${Math.max(streak,0)}</strong></p>
+        <p>ðŸ“Š Puzzles Completed: <strong>${TOTAL_PUZZLES}/${TOTAL_PUZZLES}</strong></p>
+        <p>â±ï¸ Time Taken: <strong>${totalTime} minutes</strong></p>
+        <p>ðŸŽ¯ Verification Code: <strong>${code}</strong></p>
       </div>
       <div class="skills-unlocked">
-        <h3>🛠️ Skills Mastered:</h3>
+        <h3>ðŸ› ï¸ Skills Mastered:</h3>
         <ul>
           <li>Find verbs FAST</li>
           <li>Identify subjects</li>
-          <li>Tag questions → pronouns</li>
+          <li>Tag questions â†’ pronouns</li>
           <li>Subject-verb agreement</li>
           <li>Tense matching</li>
           <li>Spanish adjective order</li>
           <li>Possession with 'de'</li>
         </ul>
       </div>
-      <button class="btn btn-primary" onclick="showGallery()" style="margin-top:20px;">View Your Gallery 🖼️</button>
+      <button class="btn btn-primary" onclick="showGallery()" style="margin-top:20px;">View Your Gallery ðŸ–¼ï¸</button>
       <button class="btn btn-primary" onclick="location.reload()" style="margin-top:20px;">Play Again</button>
     </div>
   `;
@@ -647,12 +647,12 @@ function showGallery() {
     image:'botero.jpg', 
     artist:'Fernando Botero', 
     title:'La Familia', 
-    blurb:'🎁 BONUS REWARD! The Colombian master is known for his signature style of volumetric, rounded figures celebrating Latin American culture with humor and warmth.'
+    blurb:'ðŸŽ BONUS REWARD! The Colombian master is known for his signature style of volumetric, rounded figures celebrating Latin American culture with humor and warmth.'
   };
   
   overlay.innerHTML = `
     <div class="tutorial-box gallery-box">
-      <h2>Your Grammar Gallery 🎨</h2>
+      <h2>Your Grammar Gallery ðŸŽ¨</h2>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin:20px 0;">
         ${unlockedPaintings.map((r,i) => `
           <div style="background:white;padding:15px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.1);text-align:center;">
