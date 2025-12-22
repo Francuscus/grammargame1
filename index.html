@@ -1,7 +1,11 @@
-<!-- Version 1.09 - Grammar Gallery -->
+<!-- Version 1.10 - Grammar Gallery -->
 <!-- Fixes: -->
-<!-- 1. Fixed "Next →" button after last puzzle: now correctly triggers reward/completion -->
-<!-- 2. "la universidad de Monmouth" puzzle now works (no nothing happens) -->
+<!-- 1. Fixed possession reorder puzzle (Level 9): -->
+<!--    - Now correctly accepts "la mesa del comedor" as the answer -->
+<!--    - Added "del (of the)" as an explicit bank option so students can select it -->
+<!-- 2. Fixed "Next →" button after final puzzle: -->
+<!--    - Now reliably advances to reward/completion screen after last puzzle in Level 9 -->
+<!--    - Completion screen shows Sagrada Familia and gallery button -->
 <!-- 3. All other features unchanged -->
 
 <!DOCTYPE html>
@@ -212,7 +216,7 @@ body {
 </div>
 
 <script>
-// Version 1.09 - Grammar Gallery
+// Version 1.10 - Grammar Gallery
 
 // Game Data
 const LEVELS = [
@@ -259,9 +263,9 @@ const LEVELS = [
   ]},
   {id:9, concept:"🚫 Possession Practice (Harder!)", mission:"Rewrite possessive phrases with 'de'.", bridge:"Spanish never uses apostrophe-s. Practice the pattern.", colorClass:"", puzzles:[
     {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"The teacher's desk →", options:["the desk of the teacher","the teacher's desk","the teachers desk"], answerIndex:0, explain:"'the desk of the teacher' → el escritorio del profesor."},
-    {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "la (the)", "mesa (table)", "comedor (dining room)"], answers:[["la (the)", "mesa (table)", "del (of the)", "comedor (dining room)"]], explain:"Spanish: la mesa del comedor (the dining room table)."},
+    {type:"reorder", prompt:"Build the Spanish phrase:", bank:["la (the)", "mesa (table)", "del (of the)", "comedor (dining room)"], answers:[["la (the)", "mesa (table)", "del (of the)", "comedor (dining room)"]], explain:"Spanish: la mesa del comedor (the dining room table)."},
     {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"The children's books →", options:["the books of the children","the childrens books","the childrens' books"], answerIndex:0, explain:"'the books of the children' → los libros de los niños."},
-    {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "la (the)", "universidad (university)", "Monmouth (Monmouth)"], answers:[["la (the)", "universidad (university)", "de (of)", "Monmouth (Monmouth)"]], explain:"Spanish: la universidad de Monmouth (Monmouth University)."}
+    {type:"reorder", prompt:"Build the Spanish phrase:", bank:["la (the)", "universidad (university)", "de (of)", "Monmouth (Monmouth)"], answers:[["la (the)", "universidad (university)", "de (of)", "Monmouth (Monmouth)"]], explain:"Spanish: la universidad de Monmouth (Monmouth University)."}
   ]}
 ];
 const TOTAL_PUZZLES = LEVELS.reduce((sum, l) => sum + l.puzzles.length, 0);
@@ -550,14 +554,9 @@ function next() {
     hideFeedback();
   } else {
     // Level complete → show reward or completion
-    if (levelIndex < LEVELS.length - 1) {
-      const reward = REWARDS[levelIndex];
-      unlockedPaintings.push(reward);
-      showReward(levelIndex + 1, reward);
-    } else {
-      endTime = Date.now();
-      showCompletion();
-    }
+    const reward = REWARDS[levelIndex];
+    unlockedPaintings.push(reward);
+    showReward(levelIndex + 1, reward);
   }
 }
 function showReward(levelId, reward) {
@@ -577,11 +576,16 @@ function showReward(levelId, reward) {
   overlay.querySelector('.reward-img').onclick = () => {
     overlay.remove();
     renderGalleryWall();
-    levelIndex++;
-    puzzleIndex = 0;
-    renderHeader();
-    renderPuzzle();
-    hideFeedback();
+    if (levelIndex < LEVELS.length - 1) {
+      levelIndex++;
+      puzzleIndex = 0;
+      renderHeader();
+      renderPuzzle();
+      hideFeedback();
+    } else {
+      endTime = Date.now();
+      showCompletion();
+    }
   };
 }
 function renderGalleryWall() {
