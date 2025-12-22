@@ -1,8 +1,8 @@
-<!-- Version 1.08 - Grammar Gallery -->
+<!-- Version 1.09 - Grammar Gallery -->
 <!-- Fixes: -->
-<!-- 1. Fixed "Next →" button: now correctly advances to reward/completion after last puzzle -->
-<!-- 2. Possession puzzle (Level 9): changed "de comedor" to "del comedor" (correct contraction: de + el = del) -->
-<!-- 3. All other features (subject acceptance, gallery, skip button, etc.) unchanged -->
+<!-- 1. Fixed "Next →" button after last puzzle: now correctly triggers reward/completion -->
+<!-- 2. "la universidad de Monmouth" puzzle now works (no nothing happens) -->
+<!-- 3. All other features unchanged -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -212,7 +212,7 @@ body {
 </div>
 
 <script>
-// Version 1.08 - Grammar Gallery
+// Version 1.09 - Grammar Gallery
 
 // Game Data
 const LEVELS = [
@@ -261,7 +261,7 @@ const LEVELS = [
     {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"The teacher's desk →", options:["the desk of the teacher","the teacher's desk","the teachers desk"], answerIndex:0, explain:"'the desk of the teacher' → el escritorio del profesor."},
     {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "la (the)", "mesa (table)", "comedor (dining room)"], answers:[["la (the)", "mesa (table)", "del (of the)", "comedor (dining room)"]], explain:"Spanish: la mesa del comedor (the dining room table)."},
     {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"The children's books →", options:["the books of the children","the childrens books","the childrens' books"], answerIndex:0, explain:"'the books of the children' → los libros de los niños."},
-    {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "Monmouth (Monmouth)", "la (the)", "universidad (university)"], answers:[["la (the)", "universidad (university)", "de (of)", "Monmouth (Monmouth)"]], explain:"Spanish: la universidad de Monmouth (Monmouth University)."}
+    {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "la (the)", "universidad (university)", "Monmouth (Monmouth)"], answers:[["la (the)", "universidad (university)", "de (of)", "Monmouth (Monmouth)"]], explain:"Spanish: la universidad de Monmouth (Monmouth University)."}
   ]}
 ];
 const TOTAL_PUZZLES = LEVELS.reduce((sum, l) => sum + l.puzzles.length, 0);
@@ -535,12 +535,11 @@ function skip() {
   showFeedback('⏭️ Skipped. No points.', 'neutral');
   streak = 0; completedPuzzles++;
   updateStats();
-  // Move to next puzzle or level
   if (puzzleIndex < currentLevel().puzzles.length - 1) {
     puzzleIndex++;
     renderPuzzle();
   } else {
-    next(); // Move to next level or completion
+    next();
   }
 }
 function next() {
@@ -550,10 +549,15 @@ function next() {
     renderPuzzle();
     hideFeedback();
   } else {
-    // Level complete → show reward
-    const reward = REWARDS[levelIndex];
-    unlockedPaintings.push(reward);
-    showReward(levelIndex + 1, reward);
+    // Level complete → show reward or completion
+    if (levelIndex < LEVELS.length - 1) {
+      const reward = REWARDS[levelIndex];
+      unlockedPaintings.push(reward);
+      showReward(levelIndex + 1, reward);
+    } else {
+      endTime = Date.now();
+      showCompletion();
+    }
   }
 }
 function showReward(levelId, reward) {
@@ -570,20 +574,14 @@ function showReward(levelId, reward) {
   `;
   document.body.appendChild(overlay);
 
-  // Click the image to close and proceed
   overlay.querySelector('.reward-img').onclick = () => {
     overlay.remove();
-    renderGalleryWall(); // Update wall after click
-    if (levelIndex < LEVELS.length - 1) {
-      levelIndex++;
-      puzzleIndex = 0;
-      renderHeader();
-      renderPuzzle();
-      hideFeedback();
-    } else {
-      endTime = Date.now();
-      showCompletion();
-    }
+    renderGalleryWall();
+    levelIndex++;
+    puzzleIndex = 0;
+    renderHeader();
+    renderPuzzle();
+    hideFeedback();
   };
 }
 function renderGalleryWall() {
@@ -592,7 +590,7 @@ function renderGalleryWall() {
     right: els.wallRight
   };
   Object.values(sides).forEach(el => el.innerHTML = '');
-  const framesPerSide = 4; // 4 on left, 4 on right
+  const framesPerSide = 4;
   ['left', 'right'].forEach((sideKey, sideIndex) => {
     const el = sides[sideKey];
     for (let j = 0; j < framesPerSide; j++) {
