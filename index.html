@@ -1,11 +1,11 @@
-<!-- Version 1.03 - Grammar Gallery -->
-<!-- Fixes: -->
-<!-- 1. Multiple-choice (mc) and fix puzzles NO LONGER duplicate when selecting an answer -->
-<!-- 2. Added more subject identification exercises (Level 2 now has 5 puzzles) -->
-<!-- 3. Added more tag questions (Level 3 now has 6 puzzles) -->
-<!-- 4. Added a new Level 9: Possession (more possessive questions) -->
-<!-- 5. "Let's Go!" button works reliably -->
-<!-- 6. All images load with correct filenames -->
+<!-- Version 1.04 - Grammar Gallery -->
+<!-- Changes: -->
+<!-- 1. Fixed adjective puzzle (Level 7): -->
+<!--    - Sentence changed to "The white cat walks quickly" (only one adjective: "white") -->
+<!--    - Accept only "white" as adjective -->
+<!--    - Reorder puzzle updated to "el gato blanco" (article + noun + adjective) -->
+<!-- 2. Multiple-choice duplication fixed (already in 1.03) -->
+<!-- 3. All other features (gallery, more subject/tag/possession questions) unchanged -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -215,7 +215,7 @@ body {
 </div>
 
 <script>
-// Version 1.03 - Grammar Gallery
+// Version 1.04 - Grammar Gallery
 
 // Game Data
 const LEVELS = [
@@ -252,8 +252,8 @@ const LEVELS = [
     {type:"fix", prompt:"Fix tense:", sentence:"Tomorrow, we practiced.", choices:["will practice","practiced"], answerIndex:0, explain:"Future → 'will practice'."}
   ]},
   {id:7, concept:"🎨 Adjectives + Spanish Order", mission:"Find adjectives, use noun + adj.", bridge:"Spanish: noun before adjective.", colorClass:"adjective", puzzles:[
-    {type:"selectWords", prompt:"Select the ADJECTIVE that describes the car.", sentence:"The red car is fast.", accept:[["red"],["fast"]], explain:"'red' and 'fast' are adjectives."},
-    {type:"reorder", prompt:"Build in Spanish order (article + noun + adjective):", bank:["rojo (red)", "coche (car)", "el (the)"], answers:[["el (the)", "coche (car)", "rojo (red)"]], explain:"Spanish: el coche rojo (the red car). Noun comes before adjective!"}
+    {type:"selectWords", prompt:"Select the ADJECTIVE that describes the cat.", sentence:"The white cat walks quickly.", accept:[["white"]], explain:"'white' is the adjective describing the cat."},
+    {type:"reorder", prompt:"Build in Spanish order (article + noun + adjective):", bank:["blanco (white)", "gato (cat)", "el (the)"], answers:[["el (the)", "gato (cat)", "blanco (white)"]], explain:"Spanish: el gato blanco (the white cat). Noun comes before adjective!"}
   ]},
   {id:8, concept:"🚫 Possession: NO Apostrophe-S!", mission:"Rewrite using 'of' instead of apostrophe-s.", bridge:"Spanish uses 'de' (of), never apostrophe-s.", colorClass:"", puzzles:[
     {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"John's book →", options:["the book of John","the John's book","Johns book"], answerIndex:0, explain:"'the book of John' matches Spanish logic."},
