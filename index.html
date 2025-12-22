@@ -244,9 +244,7 @@ const LEVELS = [
   {id:8, concept:"🚫 Possession: NO Apostrophe-S!", mission:"Rewrite using 'of' instead of apostrophe-s.", bridge:"Spanish uses 'de' (of), never apostrophe-s.", colorClass:"", puzzles:[
     {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"John's book →", options:["the book of John","the John's book","Johns book"], answerIndex:0, explain:"'the book of John' matches Spanish logic."},
     {type:"reorder", prompt:"Build the Spanish phrase:", bank:["de (of)", "Juan (John)", "libro (book)", "el (the)"], answers:[["el (the)", "libro (book)", "de (of)", "juan (john)"]], explain:"Spanish: el libro de Juan (the book of John)."},
-    {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"Lisa's car →", options:["the car of Lisa","Lisas car","the Lisa car"], answerIndex:0, explain:"'the car of Lisa' → Spanish: el coche de Lisa."}
-  ]},
-  {id:9, concept:"🚫 Possession Practice (Harder!)", mission:"Rewrite possessive phrases with 'de'.", bridge:"Spanish never uses apostrophe-s. Practice the pattern.", colorClass:"", puzzles:[
+    {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"Lisa's car →", options:["the car of Lisa","Lisas car","the Lisa car"], answerIndex:0, explain:"'the car of Lisa' → Spanish: el coche de Lisa."},
     {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"The teacher's desk →", options:["the desk of the teacher","the teacher's desk","the teachers desk"], answerIndex:0, explain:"'the desk of the teacher' → el escritorio del profesor."},
     {type:"reorder", prompt:"Build the Spanish phrase:", bank:["la (the)", "mesa (table)", "del (of the)", "comedor (dining room)"], answers:[["la (the)", "mesa (table)", "del (of the)", "comedor (dining room)"]], explain:"Spanish: la mesa del comedor (the dining room table)."},
     {type:"mc", prompt:"Rewrite without apostrophe-s:", stem:"The children's books →", options:["the books of the children","the childrens books","the childrens' books"], answerIndex:0, explain:"'the books of the children' → los libros de los niños."},
@@ -561,15 +559,18 @@ function showReward(levelId, reward) {
   overlay.querySelector('.reward-img').onclick = () => {
     overlay.remove();
     renderGalleryWall();
-    if (levelIndex < LEVELS.length - 1) {
+    // FIXED: Check if we just completed the LAST level (using >= instead of <)
+    if (levelIndex >= LEVELS.length - 1) {
+      // This was the final reward - show completion
+      endTime = Date.now();
+      showCompletion();
+    } else {
+      // Move to next level
       levelIndex++;
       puzzleIndex = 0;
       renderHeader();
       renderPuzzle();
       hideFeedback();
-    } else {
-      endTime = Date.now();
-      showCompletion();
     }
   };
 }
@@ -640,17 +641,31 @@ function showGallery() {
 
   const overlay = document.createElement('div');
   overlay.className = 'tutorial-overlay';
+  
+  // Add Botero as bonus painting
+  const boteroBonus = {
+    image:'botero.jpg', 
+    artist:'Fernando Botero', 
+    title:'La Familia', 
+    blurb:'🎁 BONUS REWARD! The Colombian master is known for his signature style of volumetric, rounded figures celebrating Latin American culture with humor and warmth.'
+  };
+  
   overlay.innerHTML = `
     <div class="tutorial-box gallery-box">
-      <h2>Your Grammar Gallery</h2>
+      <h2>Your Grammar Gallery 🎨</h2>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin:20px 0;">
         ${unlockedPaintings.map((r,i) => `
           <div style="background:white;padding:15px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.1);text-align:center;">
             <img src="${r.image}" alt="${r.title}" style="max-width:100%;max-height:400px;object-fit:contain;border-radius:10px;margin-bottom:10px;">
             <p><strong>${r.artist} - ${r.title}</strong></p>
-            <p>${r.blurb}</p>
+            <p style="font-size:14px;">${r.blurb}</p>
           </div>
         `).join('')}
+        <div style="background:linear-gradient(135deg, #fff5e0 0%, #ffe4b5 100%);padding:15px;border-radius:10px;box-shadow:0 4px 12px rgba(255,215,0,0.3);text-align:center;border:3px solid #ffa500;">
+          <img src="${boteroBonus.image}" alt="${boteroBonus.title}" style="max-width:100%;max-height:400px;object-fit:contain;border-radius:10px;margin-bottom:10px;">
+          <p><strong>${boteroBonus.artist} - ${boteroBonus.title}</strong></p>
+          <p style="font-size:14px;">${boteroBonus.blurb}</p>
+        </div>
       </div>
       <h3>Recap for Professor (Post to VHL)</h3>
       <textarea id="recapText" style="width:100%;height:120px;padding:10px;font-family:monospace;">${recap}</textarea>
